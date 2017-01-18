@@ -14,6 +14,9 @@ public enum FileError: Error {
 
 	/// Split ZIP file is missing segments
 	case segmentMissing
+
+	/// File does not exist
+	case doesNotExist
 }
 
 public enum ZipError: Error {

@@ -99,7 +99,7 @@ open class ZipFile : Sequence {
 	}
 
 	func read(filename: String) throws -> Data {
-		fatalError("not implemented")
+		throw FileError.doesNotExist
 	}
 
 }
