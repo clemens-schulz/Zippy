@@ -15,22 +15,22 @@ Structure of the end of central directory (c.d.) record:
 ----+-----------------------------------------------+-----------+------------
 0	| Signature										| 4 bytes	| 0x06054b50
 ----+-----------------------------------------------+-----------+------------
-4	| Disk number									| 2 bytes	|
+4	| Number of current disk						| 2 bytes	|
 ----+-----------------------------------------------+-----------+------------
 6	| Number of disk that contains start of c.d.	| 2 bytes	|
 ----+-----------------------------------------------+-----------+------------
-8	| Entries in c.d. on this disk					| 2 bytes	|
+8	| Entries in c.d. on current disk				| 2 bytes	|
 ----+-----------------------------------------------+-----------+------------
 10	| Total entries in c.d.							| 2 bytes	|
 ----+-----------------------------------------------+-----------+------------
 12	| c.d. size in bytes							| 4 bytes	|
 ----+-----------------------------------------------+-----------+------------
-16	| offset of start of central directory with		| 4 bytes	|
+16	| Offset of start of central directory with		| 4 bytes	|
 	| respect to the starting disk number			|			|
 ----+-----------------------------------------------+-----------+------------
-20	| file comment length							| 2 bytes	|
+20	| File comment length							| 2 bytes	|
 ----+-----------------------------------------------+-----------+------------
-22	| file comment									| variable	|
+22	| File comment									| variable	|
 
 */
 
@@ -102,9 +102,9 @@ struct EndOfCentralDirectoryRecord: DataStruct {
 	
 	- Throws: Error of type `ZipError`
 	
-	- Returns: Struct for end of central directory record
+	- Returns: Offset of end of central directory record
 	*/
-	static func find(in data: Data) throws -> EndOfCentralDirectoryRecord {
+	static func find(in data: Data) throws -> Data.Index {
 		// Search for end of central directory record from end of file in reverse
 		var i = data.endIndex - EndOfCentralDirectoryRecord.minLength
 		let minOffset = Swift.min(data.startIndex, data.endIndex - EndOfCentralDirectoryRecord.maxLength)
@@ -123,12 +123,7 @@ struct EndOfCentralDirectoryRecord: DataStruct {
 			throw ZipError.endOfCentralDirectoryRecordMissing
 		}
 
-		let endOfCentralDirRec = try EndOfCentralDirectoryRecord(data: data, offset: &i)
-		guard i == data.endIndex else {
-			throw ZipError.unexpectedBytes
-		}
-
-		return endOfCentralDirRec
+		return i
 	}
 
 }

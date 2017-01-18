@@ -38,7 +38,12 @@ open class ZipFile : Sequence {
 		}
 
 		// Find end of central directory record
-		let endOfCentralDirRec = try EndOfCentralDirectoryRecord.find(in: fileContents)
+		let endOfCentralDirRecOffset = try EndOfCentralDirectoryRecord.find(in: fileContents)
+		var offsetAfterReading = endOfCentralDirRecOffset
+		let endOfCentralDirRec = try EndOfCentralDirectoryRecord(data: fileContents, offset: &offsetAfterReading)
+		guard offsetAfterReading == fileContents.endIndex else {
+			throw ZipError.unexpectedBytes
+		}
 
 		// TODO: support split ZIP files
 		guard endOfCentralDirRec.diskNumber == endOfCentralDirRec.centralDirectoryStartDiskNumber && endOfCentralDirRec.entriesOnDisk == endOfCentralDirRec.totalEntries else {
@@ -50,20 +55,41 @@ open class ZipFile : Sequence {
 			self.comment = String(data: endOfCentralDirRec.fileComment, encoding: .utf8) // TODO: use actual encoding
 		}
 
+		// TODO: check if zip64 locator is present (value in end record == -1)
+
 		// Parse central directory
-		var i = Data.Index(endOfCentralDirRec.centralDirectoryOffset)
-		if i > fileContents.endIndex - CentralDirectoryFileHeader.minLength {
+		let centralDirectoryOffset = Data.Index(endOfCentralDirRec.centralDirectoryOffset)
+		let centralDirectoryEndIndex = centralDirectoryOffset + Data.Index(endOfCentralDirRec.centralDirectorySize)
+
+		if centralDirectoryOffset > endOfCentralDirRecOffset {
 			throw ZipError.invalidCentralDirectoryOffset
+		} else if centralDirectoryEndIndex > endOfCentralDirRecOffset {
+			throw ZipError.invalidCentralDirectoryLength
 		}
 
+		var i = centralDirectoryOffset
 		var fileEntries: [FileEntry] = []
 
-		var endOfCentralDirectoryReached = false
 		while i < fileContents.endIndex {
 			let signature = fileContents.readLittleUInt32(offset: i)
 
-			// TODO: digital signature, Zip64 record + locator
+			// Check if we reach end of central directory
+			if i > centralDirectoryEndIndex {
+				// Sum of central directory record sizes does not line up with expected length
+				throw ZipError.invalidCentralDirectoryLength
+			} else if i == centralDirectoryEndIndex {
+				// We make sure that there is no unexpected data between central directory and end record
+				if signature == EndOfCentralDirectoryRecord.signature && i == endOfCentralDirRecOffset {
+					break
+				} else {
+					throw ZipError.unexpectedBytes
+				}
+			}
+
+			// We did not reach the end yet. Look for next entry.
+
 			if signature == CentralDirectoryFileHeader.signature {
+				// File Header
 				let fileHeader = try CentralDirectoryFileHeader(data: fileContents, offset: &i)
 				let fileEntry = try FileEntry(header: fileHeader)
 				if !fileEntry.filename.hasPrefix("__MACOSX/") {
@@ -71,17 +97,10 @@ open class ZipFile : Sequence {
 					// TODO: find better way to identify resource fork. Probably using extra field
 					fileEntries.append(fileEntry)
 				}
-			} else if signature == EndOfCentralDirectoryRecord.signature {
-				endOfCentralDirectoryReached = true
-				break
 			} else {
+				// Unknown signature. We don't know what to do.
 				throw ZipError.unexpectedBytes
 			}
-		}
-
-		if !endOfCentralDirectoryReached {
-			// Could happen if variable length field includes end of central directory record
-			throw ZipError.unexpectedBytes
 		}
 
 		// TODO: support encrypted ZIP files

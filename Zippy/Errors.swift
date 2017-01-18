@@ -34,4 +34,7 @@ public enum ZipError: Error {
 
 	/// Offset of central directory is not in valid range
 	case invalidCentralDirectoryOffset
+
+	/// Length of central directory does not match actual length
+	case invalidCentralDirectoryLength
 }
