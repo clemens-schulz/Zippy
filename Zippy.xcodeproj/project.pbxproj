@@ -19,6 +19,8 @@
 		ABDADA651E2BE59F003EF8A3 /* Data+Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABDADA641E2BE59F003EF8A3 /* Data+Utils.swift */; };
 		ABDADA671E2BF5A4003EF8A3 /* EndOfCentralDirectoryRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABDADA661E2BF5A4003EF8A3 /* EndOfCentralDirectoryRecord.swift */; };
 		ABDADA691E2D5651003EF8A3 /* CentralDirectoryFileHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABDADA681E2D5651003EF8A3 /* CentralDirectoryFileHeader.swift */; };
+		ABE026E21E2FD75E007A75F1 /* Zip64EndOfCentralDirectoryRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABE026E11E2FD75E007A75F1 /* Zip64EndOfCentralDirectoryRecord.swift */; };
+		ABE026E41E300026007A75F1 /* Zip64EndOfCentralDirectoryLocator.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABE026E31E300026007A75F1 /* Zip64EndOfCentralDirectoryLocator.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -48,6 +50,8 @@
 		ABDADA641E2BE59F003EF8A3 /* Data+Utils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Data+Utils.swift"; sourceTree = "<group>"; };
 		ABDADA661E2BF5A4003EF8A3 /* EndOfCentralDirectoryRecord.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EndOfCentralDirectoryRecord.swift; sourceTree = "<group>"; };
 		ABDADA681E2D5651003EF8A3 /* CentralDirectoryFileHeader.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CentralDirectoryFileHeader.swift; sourceTree = "<group>"; };
+		ABE026E11E2FD75E007A75F1 /* Zip64EndOfCentralDirectoryRecord.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Zip64EndOfCentralDirectoryRecord.swift; sourceTree = "<group>"; };
+		ABE026E31E300026007A75F1 /* Zip64EndOfCentralDirectoryLocator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Zip64EndOfCentralDirectoryLocator.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -93,8 +97,10 @@
 				AB013EAF1DF22FA00029D47A /* ZipFile.swift */,
 				AB44C8A51E2A424400BD3C38 /* ZipEntry.swift */,
 				ABDADA621E2A8AC3003EF8A3 /* LocalFileHeader.swift */,
-				ABDADA661E2BF5A4003EF8A3 /* EndOfCentralDirectoryRecord.swift */,
 				ABDADA681E2D5651003EF8A3 /* CentralDirectoryFileHeader.swift */,
+				ABE026E11E2FD75E007A75F1 /* Zip64EndOfCentralDirectoryRecord.swift */,
+				ABE026E31E300026007A75F1 /* Zip64EndOfCentralDirectoryLocator.swift */,
+				ABDADA661E2BF5A4003EF8A3 /* EndOfCentralDirectoryRecord.swift */,
 				ABDADA641E2BE59F003EF8A3 /* Data+Utils.swift */,
 				ABB098EE1E2E2F65005BE14B /* Errors.swift */,
 				AB44C8A71E2A48D500BD3C38 /* ZipStructs.swift */,
@@ -252,7 +258,9 @@
 				ABDADA631E2A8AC3003EF8A3 /* LocalFileHeader.swift in Sources */,
 				ABDADA691E2D5651003EF8A3 /* CentralDirectoryFileHeader.swift in Sources */,
 				AB44C8A81E2A48D500BD3C38 /* ZipStructs.swift in Sources */,
+				ABE026E21E2FD75E007A75F1 /* Zip64EndOfCentralDirectoryRecord.swift in Sources */,
 				AB44C8A61E2A424400BD3C38 /* ZipEntry.swift in Sources */,
+				ABE026E41E300026007A75F1 /* Zip64EndOfCentralDirectoryLocator.swift in Sources */,
 				ABB098EF1E2E2F65005BE14B /* Errors.swift in Sources */,
 				ABDADA671E2BF5A4003EF8A3 /* EndOfCentralDirectoryRecord.swift in Sources */,
 			);

@@ -29,6 +29,15 @@ extension Data {
 	}
 
 	/**
+	Returns little-endian ordered bytes at `offset` as UInt64 value.
+	*/
+	func readLittleUInt64(offset: Data.Index) -> UInt64 {
+		let range: Range<Data.Index> = offset..<(offset+MemoryLayout<UInt64>.size)
+		let value: UInt64 = self.subdata(in: range).withUnsafeBytes { return $0.pointee }
+		return NSSwapLittleLongLongToHost(value)
+	}
+
+	/**
 	Returns little-endian ordered bytes at `offset` as UInt16 value and advances offset by 2 bytes.
 	*/
 	func readLittleUInt16(offset: inout Data.Index) -> UInt16 {
@@ -43,6 +52,15 @@ extension Data {
 	func readLittleUInt32(offset: inout Data.Index) -> UInt32 {
 		let value: UInt32 = self.readLittleUInt32(offset: offset)
 		offset += MemoryLayout<UInt32>.size
+		return value
+	}
+
+	/**
+	Returns little-endian ordered bytes at `offset` as UInt64 value and advances offset by 8 bytes.
+	*/
+	func readLittleUInt64(offset: inout Data.Index) -> UInt64 {
+		let value: UInt64 = self.readLittleUInt64(offset: offset)
+		offset += MemoryLayout<UInt64>.size
 		return value
 	}
 

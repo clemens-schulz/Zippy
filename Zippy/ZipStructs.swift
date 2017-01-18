@@ -78,11 +78,20 @@ struct MSDOSDate: RawRepresentable {
 	}
 }
 
-// TODO: needed?
 protocol DataStruct {
+
 	init(data: Data, offset: inout Data.Index) throws
+
 }
 
+extension DataStruct {
+
+	init(data: Data, offset: Data.Index) throws {
+		var i = offset
+		try self.init(data: data, offset: &i)
+	}
+
+}
 
 //
 //let log = OSLog(subsystem: "Zippy", category: "ParseZip")
