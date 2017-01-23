@@ -7,15 +7,14 @@
 //
 
 import Foundation
-import Compression
 
 open class ZipFile : Sequence {
 
-	private let fileWrapper: FileWrapper
+	private let fileData: SplitData
 
-	private(set) var entries: [FileEntry]
+	private(set) var entries: [String:FileEntry]
 	open var filenames: [String] {
-		return self.entries.map { $0.filename }
+		return Array(self.entries.keys)
 	}
 
 	open var comment: String?
@@ -30,83 +29,164 @@ open class ZipFile : Sequence {
 	
 	- Throws: Error of type `FileError` or `ZipError`.
 	*/
-	init(fileWrapper: FileWrapper) throws {
-		precondition(fileWrapper.isRegularFile)
+	convenience init(fileWrapper: FileWrapper) throws {
+		try self.init(fileWrappers: [fileWrapper])
+	}
 
-		guard let fileContents = fileWrapper.regularFileContents else {
-			throw FileError.readFailed
+	/**
+	Initializes split ZIP file. `fileWrappers` may only contain regular-file file wrappers and must be ordered by disk number. E.g.: disk 1 at index 0, disk 2 at index 1, …
+	
+	- Throws: Error of type `FileError` or `ZipError`.
+	*/
+	init(fileWrappers: [FileWrapper]) throws {
+		// Make sure all file wrappers wrap regular files
+		for fileWrapper in fileWrappers {
+			if !fileWrapper.isRegularFile {
+				throw FileError.readFailed
+			}
 		}
 
-		// Find end of central directory record
-		let endOfCentralDirRecOffset = try EndOfCentralDirectoryRecord.find(in: fileContents)
-		var offsetAfterReading = endOfCentralDirRecOffset
-		let endOfCentralDirRec = try EndOfCentralDirectoryRecord(data: fileContents, offset: &offsetAfterReading)
-		guard offsetAfterReading == fileContents.endIndex else {
-			throw ZipError.unexpectedBytes
+		let fileData = SplitData(fileWrappers: fileWrappers)
+		let lastDisk = fileData.numberOfDisks - 1
+
+		// Find and read end of central directory record
+		let endOfCentralDirRecOffset = try EndOfCentralDirectoryRecord.find(in: fileData)
+		let endOfCentralDirRec = try EndOfCentralDirectoryRecord(data: fileData, offset: endOfCentralDirRecOffset)
+
+		// Check if Zip64 locator exists and read it
+		let zip64Locator: Zip64EndOfCentralDirectoryLocator?
+		let zip64LocatorOffset = endOfCentralDirRecOffset - Zip64EndOfCentralDirectoryLocator.length
+		if zip64LocatorOffset >= 0 {
+			do {
+				zip64Locator = try Zip64EndOfCentralDirectoryLocator(data: fileData, offset: zip64LocatorOffset)
+			} catch ZipError.unexpectedSignature {
+				zip64Locator = nil
+			}
+		} else {
+			zip64Locator = nil
 		}
 
-		// TODO: support split ZIP files
-		guard endOfCentralDirRec.diskNumber == endOfCentralDirRec.centralDirectoryStartDiskNumber && endOfCentralDirRec.entriesOnDisk == endOfCentralDirRec.totalEntries else {
-			throw FileError.segmentMissing
+		// Get position and size of central directory from end record or zip64 end record
+		var centralDirectoryDisk: Int
+		var centralDirectoryOffset: Int
+		let centralDirectorySize: Int
+		let centralDirectoryNumberOfEntries: Int
+		let centralDirecotryExpectedEndOffsetOnLastDisk: Int
+
+		if let zip64Locator = zip64Locator {
+			// File is in Zip64 format.
+
+			// Check if all disks are present
+			let numberOfSegments = Int(zip64Locator.totalNumberOfDisks)
+			if fileWrappers.count < numberOfSegments {
+				throw FileError.segmentMissing
+			} else if fileWrappers.count > numberOfSegments {
+				throw FileError.tooManySegments
+			}
+
+			// Read zip64 end of central directory record
+			var disk = Int(zip64Locator.zip64EndRecordStartDiskNumber)
+			var offset = Int(zip64Locator.zip64EndRecordRelativeOffset)
+			let zip64EndRecord = try Zip64EndOfCentralDirectoryRecord(data: fileData, disk: &disk, offset: &offset)
+			if disk != lastDisk || offset != zip64LocatorOffset {
+				// There are unused bytes between zip64 record and locator
+				throw ZipError.unexpectedBytes
+			}
+
+			// Check if all disks are present (again)
+			if numberOfSegments != Int(endOfCentralDirRec.diskNumber) {
+				throw ZipError.conflictingValues
+			}
+
+			// Get values from record
+			centralDirectoryDisk = Int(zip64EndRecord.centralDirectoryStartDiskNumber)
+			centralDirectoryOffset = Int(zip64EndRecord.centralDirectoryOffset)
+			centralDirectorySize = Int(zip64EndRecord.centralDirectorySize)
+			centralDirectoryNumberOfEntries = Int(zip64EndRecord.totalEntries)
+			centralDirecotryExpectedEndOffsetOnLastDisk = Int(zip64Locator.zip64EndRecordRelativeOffset)
+
+			// TODO: check zip64EndRecord.entriesOnDisk
+			// TODO: check zip64EndRecord.versionNeeded
+
+		} else {
+			// File is not in Zip64 format
+
+			// Check if all disks are present
+			let numberOfSegments = Int(endOfCentralDirRec.diskNumber) + 1
+			if fileWrappers.count < numberOfSegments {
+				throw FileError.segmentMissing
+			} else if fileWrappers.count > numberOfSegments {
+				throw FileError.tooManySegments
+			}
+
+			// Get values from record
+			centralDirectoryDisk = Int(endOfCentralDirRec.centralDirectoryStartDiskNumber)
+			centralDirectoryOffset = Int(endOfCentralDirRec.centralDirectoryOffset)
+			centralDirectorySize = Int(endOfCentralDirRec.centralDirectorySize)
+			centralDirectoryNumberOfEntries = Int(endOfCentralDirRec.totalEntries)
+			centralDirecotryExpectedEndOffsetOnLastDisk = endOfCentralDirRecOffset
+			// TODO: check endOfCentralDirRec.entriesOnDisk
 		}
+
+		// Get encoding for filenames and comments
+		let encoding: String.Encoding = .utf8 // TODO: get actual encoding
 
 		// Get file comment
 		if endOfCentralDirRec.fileComment.count > 0 {
-			self.comment = String(data: endOfCentralDirRec.fileComment, encoding: .utf8) // TODO: use actual encoding
+			self.comment = String(data: endOfCentralDirRec.fileComment, encoding: encoding)
 		}
 
-		// TODO: check if zip64 locator is present (value in end record == -1)
-
-		// Parse central directory
-		let centralDirectoryOffset = Data.Index(endOfCentralDirRec.centralDirectoryOffset)
-		let centralDirectoryEndIndex = centralDirectoryOffset + Data.Index(endOfCentralDirRec.centralDirectorySize)
-
-		if centralDirectoryOffset > endOfCentralDirRecOffset {
+		// Basic check of central directory offset and size
+		if centralDirectoryDisk > lastDisk || (centralDirectoryDisk == lastDisk && centralDirectoryOffset > endOfCentralDirRecOffset) {
 			throw ZipError.invalidCentralDirectoryOffset
-		} else if centralDirectoryEndIndex > endOfCentralDirRecOffset {
+		} else if centralDirectoryDisk == lastDisk && centralDirectoryOffset + centralDirectorySize > endOfCentralDirRecOffset {
 			throw ZipError.invalidCentralDirectoryLength
 		}
 
-		var i = centralDirectoryOffset
-		var fileEntries: [FileEntry] = []
+		// Read entries from central directory
 
-		while i < fileContents.endIndex {
-			let signature = fileContents.readLittleUInt32(offset: i)
+		// TODO: read central directory
+		// TODO: check expected number of entries
 
-			// Check if we reach end of central directory
-			if i > centralDirectoryEndIndex {
-				// Sum of central directory record sizes does not line up with expected length
-				throw ZipError.invalidCentralDirectoryLength
-			} else if i == centralDirectoryEndIndex {
-				// We make sure that there is no unexpected data between central directory and end record
-				if signature == EndOfCentralDirectoryRecord.signature && i == endOfCentralDirRecOffset {
-					break
-				} else {
-					throw ZipError.unexpectedBytes
-				}
+		var disk = centralDirectoryDisk
+		var offset = centralDirectoryOffset
+
+		var fileEntries: [String:FileEntry] = [:]
+		var numberOfFileEntries = 0
+
+		var bytesRead = 0
+		while bytesRead < centralDirectorySize {
+			let fileHeader = try CentralDirectoryFileHeader(data: fileData, disk: &disk, offset: &offset)
+			let fileEntry = try FileEntry(header: fileHeader, encoding: encoding)
+
+			if fileEntries[fileEntry.filename] != nil {
+				throw ZipError.duplicateFileName
 			}
 
-			// We did not reach the end yet. Look for next entry.
-
-			if signature == CentralDirectoryFileHeader.signature {
-				// File Header
-				let fileHeader = try CentralDirectoryFileHeader(data: fileContents, offset: &i)
-				let fileEntry = try FileEntry(header: fileHeader)
-				if !fileEntry.filename.hasPrefix("__MACOSX/") {
-					// Skip resource forks
-					// TODO: find better way to identify resource fork. Probably using extra field
-					fileEntries.append(fileEntry)
-				}
-			} else {
-				// Unknown signature. We don't know what to do.
-				throw ZipError.unexpectedBytes
+			if !fileEntry.filename.hasPrefix("__MACOSX/") {
+				// Skip resource forks
+				// TODO: find better way to identify resource fork. Probably using extra field
+				fileEntries[fileEntry.filename] = fileEntry
 			}
+
+			numberOfFileEntries += 1 // Only used for comparing to entry count in end record
+			bytesRead += fileHeader.length
+			assert(fileHeader.length > 0)
+		}
+
+		// Check if end record reached
+		if disk != lastDisk || offset != centralDirecotryExpectedEndOffsetOnLastDisk {
+			throw ZipError.invalidCentralDirectoryLength
+		}
+
+		if numberOfFileEntries != centralDirectoryNumberOfEntries {
+			throw ZipError.invalidNumberOfCentralDirectoryEntries
 		}
 
 		// TODO: support encrypted ZIP files
 
+		self.fileData = fileData
 		self.entries = fileEntries
-		self.fileWrapper = fileWrapper
 	}
 
 	subscript(filename: String) -> Data? {
@@ -117,8 +197,21 @@ open class ZipFile : Sequence {
 		return self.filenames.makeIterator()
 	}
 
+	/**
+	Returns uncompressed data of file with specific filename.
+	
+	- Parameter filename: Name of file
+	
+	- Throws: `FileError.doesNotExist` if file does not exist or other errors of type `FileError` or `ZipError`
+	
+	- Returns: Uncompressed data
+	*/
 	func read(filename: String) throws -> Data {
-		throw FileError.doesNotExist
+		if let entry = self.entries[filename] {
+			return try entry.extract(from: self.fileData)
+		} else {
+			throw FileError.doesNotExist
+		}
 	}
 
 }

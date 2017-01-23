@@ -41,7 +41,7 @@ Structure of the Zip64 end of central directory (c.d.) record:
 struct Zip64EndOfCentralDirectoryRecord: DataStruct {
 
 	static let signature: UInt32 = 0x06064b50
-	static let minLength: Data.IndexDistance = 56
+	static let minLength: Int = 56
 
 	/// Length of Zip64 end of central directory record. Does not include the signature and length field itself.
 	let length: UInt64
@@ -73,36 +73,28 @@ struct Zip64EndOfCentralDirectoryRecord: DataStruct {
 	/// Data from extensible data sector
 	let extensibleData: Data
 
-	init(data: Data, offset: inout Data.Index) throws {
-		if data.count - offset < 4 {
+	init(data: SplitData, disk: inout Int, offset: inout Int) throws {
+		do {
+			let signature: UInt32 = try data.readLittleInteger(disk: &disk, offset: &offset)
+			if signature != Zip64EndOfCentralDirectoryRecord.signature {
+				throw ZipError.unexpectedSignature
+			}
+
+			self.length = try data.readLittleInteger(disk: &disk, offset: &offset)
+			self.versionMadeBy = Version(rawValue: try data.readLittleInteger(disk: &disk, offset: &offset))
+			self.versionNeeded = Version(rawValue: try data.readLittleInteger(disk: &disk, offset: &offset))
+			self.diskNumber = try data.readLittleInteger(disk: &disk, offset: &offset)
+			self.centralDirectoryStartDiskNumber = try data.readLittleInteger(disk: &disk, offset: &offset)
+			self.entriesOnDisk = try data.readLittleInteger(disk: &disk, offset: &offset)
+			self.totalEntries = try data.readLittleInteger(disk: &disk, offset: &offset)
+			self.centralDirectorySize = try data.readLittleInteger(disk: &disk, offset: &offset)
+			self.centralDirectoryOffset = try data.readLittleInteger(disk: &disk, offset: &offset)
+
+			let extensibleDataLength = Int(self.length) - 44
+			self.extensibleData = try data.subdata(disk: &disk, offset: &offset, length: extensibleDataLength)
+		} catch FileError.endOfFileReached {
 			throw ZipError.incomplete
 		}
-
-		let signature = data.readLittleUInt32(offset: &offset)
-		if signature != Zip64EndOfCentralDirectoryRecord.signature {
-			throw ZipError.unexpectedBytes
-		}
-
-		if data.count - offset < 8 {
-			throw ZipError.incomplete
-		}
-
-		self.length = data.readLittleUInt64(offset: &offset)
-
-		let endIndex = Data.Index(UInt64(offset) + self.length)
-		if data.endIndex < endIndex {
-			throw ZipError.incomplete
-		}
-
-		self.versionMadeBy = Version(rawValue: data.readLittleUInt16(offset: &offset))
-		self.versionNeeded = Version(rawValue: data.readLittleUInt16(offset: &offset))
-		self.diskNumber = data.readLittleUInt32(offset: &offset)
-		self.centralDirectoryStartDiskNumber = data.readLittleUInt32(offset: &offset)
-		self.entriesOnDisk = data.readLittleUInt64(offset: &offset)
-		self.totalEntries = data.readLittleUInt64(offset: &offset)
-		self.centralDirectorySize = data.readLittleUInt64(offset: &offset)
-		self.centralDirectoryOffset = data.readLittleUInt64(offset: &offset)
-		self.extensibleData = data.subdata(in: offset..<endIndex)
 	}
 	
 }

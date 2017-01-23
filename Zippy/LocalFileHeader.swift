@@ -10,6 +10,9 @@ import Foundation
 
 struct LocalFileHeader: DataStruct {
 
+	static let signature: UInt32 = 0x04034b50
+	static let minLength: Int = 30
+
 	let version: Version
 	let flags: GeneralPurposeBitFlag
 	let compressionMethod: CompressionMethod
@@ -23,51 +26,34 @@ struct LocalFileHeader: DataStruct {
 	let filename: Data
 	let extraField: Data
 
-	init(data: Data, offset: inout Data.Index) throws {
-		if data.count - offset < 4 {
-			throw ZipError.incomplete
-		}
+	init(data: SplitData, disk: inout Int, offset: inout Int) throws {
+		do {
+			let signature: UInt32 = try data.readLittleInteger(disk: &disk, offset: &offset)
+			if signature != LocalFileHeader.signature {
+				throw ZipError.unexpectedSignature
+			}
 
-		let signature = data.readLittleUInt32(offset: &offset)
-		if signature != 0x04034b50 {
-			throw ZipError.unexpectedBytes
-		}
+			self.version = Version(rawValue: try data.readLittleInteger(disk: &disk, offset: &offset))
+			self.flags = GeneralPurposeBitFlag(rawValue: try data.readLittleInteger(disk: &disk, offset: &offset))
 
-		if data.count - offset < 26 {
-			throw ZipError.incomplete
-		}
+			let compressionMethodRaw: UInt16 = try data.readLittleInteger(disk: &disk, offset: &offset)
+			if let compressionMethod = CompressionMethod(rawValue: compressionMethodRaw) {
+				self.compressionMethod = compressionMethod
+			} else {
+				throw ZipError.unknownCompressionMethod(method: compressionMethodRaw)
+			}
 
-		self.version = Version(rawValue: data.readLittleUInt16(offset: &offset))
-		self.flags = GeneralPurposeBitFlag(rawValue: data.readLittleUInt16(offset: &offset))
+			self.modificationTime = MSDOSTime(rawValue: try data.readLittleInteger(disk: &disk, offset: &offset))
+			self.modificationDate = MSDOSDate(rawValue: try data.readLittleInteger(disk: &disk, offset: &offset))
+			self.crc32checksum = try data.readLittleInteger(disk: &disk, offset: &offset)
+			self.compressedSize = try data.readLittleInteger(disk: &disk, offset: &offset)
+			self.uncompressedSize = try data.readLittleInteger(disk: &disk, offset: &offset)
+			self.filenameLength = try data.readLittleInteger(disk: &disk, offset: &offset)
+			self.extraFieldLength = try data.readLittleInteger(disk: &disk, offset: &offset)
 
-		let compressionMethodRaw = data.readLittleUInt16(offset: &offset)
-		if let compressionMethod = CompressionMethod(rawValue: compressionMethodRaw) {
-			self.compressionMethod = compressionMethod
-		} else {
-			throw ZipError.unknownCompressionMethod(method: compressionMethodRaw)
-		}
-
-		self.modificationTime = MSDOSTime(rawValue: data.readLittleUInt16(offset: &offset))
-		self.modificationDate = MSDOSDate(rawValue: data.readLittleUInt16(offset: &offset))
-		self.crc32checksum = data.readLittleUInt32(offset: &offset)
-		self.compressedSize = data.readLittleUInt32(offset: &offset)
-		self.uncompressedSize = data.readLittleUInt32(offset: &offset)
-		self.filenameLength = data.readLittleUInt16(offset: &offset)
-		self.extraFieldLength = data.readLittleUInt16(offset: &offset)
-
-		let filenameEndIndex = offset + Data.Index(self.filenameLength)
-		if filenameEndIndex <= data.count {
-			self.filename = data.subdata(in: offset..<filenameEndIndex)
-			offset = filenameEndIndex
-		} else {
-			throw ZipError.incomplete
-		}
-
-		let extraFieldEndIndex = offset + Data.Index(self.extraFieldLength)
-		if extraFieldEndIndex <= data.count {
-			self.extraField = data.subdata(in: offset..<extraFieldEndIndex)
-			offset = extraFieldEndIndex
-		} else {
+			self.filename = try data.subdata(disk: &disk, offset: &offset, length: Int(self.filenameLength))
+			self.extraField = try data.subdata(disk: &disk, offset: &offset, length: Int(self.extraFieldLength))
+		} catch FileError.endOfFileReached {
 			throw ZipError.incomplete
 		}
 	}

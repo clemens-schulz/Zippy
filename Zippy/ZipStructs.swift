@@ -80,15 +80,25 @@ struct MSDOSDate: RawRepresentable {
 
 protocol DataStruct {
 
-	init(data: Data, offset: inout Data.Index) throws
+	/**
+	Reads data structure staring at `offset` on `disk`. If successful, `disk` and `offset` will be set to position of fist byte after structure.
+	
+	- Parameter data: Data of ZIP file
+	- Parameter disk: Index of disk
+	- Parameter offset: Offset on `disk` in bytes
+	
+	- Throws: Instance of `FileError` or `ZipError`. `disk` and `offset` will reflect position after error.
+	*/
+	init(data: SplitData, disk: inout Int, offset: inout Int) throws
 
 }
 
 extension DataStruct {
 
-	init(data: Data, offset: Data.Index) throws {
-		var i = offset
-		try self.init(data: data, offset: &i)
+	init(data: SplitData, disk: Int, offset: Int) throws {
+		var mutableDisk = disk
+		var mutableOffset = offset
+		try self.init(data: data, disk: &mutableDisk, offset: &mutableOffset)
 	}
 
 }

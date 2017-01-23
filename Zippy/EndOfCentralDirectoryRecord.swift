@@ -32,13 +32,15 @@ Structure of the end of central directory (c.d.) record:
 ----+-----------------------------------------------+-----------+------------
 22	| File comment									| variable	|
 
+Structure must be located on last disk.
+
 */
 
 struct EndOfCentralDirectoryRecord: DataStruct {
 
 	static let signature: UInt32 = 0x06054b50
-	static let minLength: Data.IndexDistance = 22
-	static let maxLength: Data.IndexDistance = EndOfCentralDirectoryRecord.minLength + Data.IndexDistance(UInt16.max)
+	static let minLength: Int = 22
+	static let maxLength: Int = EndOfCentralDirectoryRecord.minLength + Data.IndexDistance(UInt16.max)
 
 	/// The number of this disk (containing the end of central directory record)
 	let diskNumber: UInt16
@@ -47,7 +49,7 @@ struct EndOfCentralDirectoryRecord: DataStruct {
 	let centralDirectoryStartDiskNumber: UInt16
 
 	/// Number of entries in central directory on current disk
-	let entriesOnDisk: UInt16
+	let entriesOnDisk: UInt16 // TODO: entries on start disk or last disk?
 
 	/// Total number of entries in central directory
 	let totalEntries: UInt16
@@ -64,54 +66,62 @@ struct EndOfCentralDirectoryRecord: DataStruct {
 	/// File comment
 	let fileComment: Data
 
-	init(data: Data, offset: inout Data.Index) throws {
-		if data.count - offset < 4 {
+	init(data: SplitData, offset: Int) throws {
+		var mutableOffset = offset
+		try self.init(data: data, offset: &mutableOffset)
+	}
+
+	init(data: SplitData, offset: inout Int) throws {
+		var lastDisk = data.numberOfDisks - 1
+		try self.init(data: data, disk: &lastDisk, offset: &offset)
+	}
+
+	init(data: SplitData, disk: inout Int, offset: inout Int) throws {
+		let diskSize = try data.size(ofDisk: disk)
+
+		do {
+			let signature: UInt32 = try data.readLittleInteger(disk: &disk, offset: &offset)
+			if signature != EndOfCentralDirectoryRecord.signature {
+				throw ZipError.unexpectedSignature
+			}
+
+			self.diskNumber = try data.readLittleInteger(disk: &disk, offset: &offset)
+			self.centralDirectoryStartDiskNumber = try data.readLittleInteger(disk: &disk, offset: &offset)
+			self.entriesOnDisk = try data.readLittleInteger(disk: &disk, offset: &offset)
+			self.totalEntries = try data.readLittleInteger(disk: &disk, offset: &offset)
+			self.centralDirectorySize = try data.readLittleInteger(disk: &disk, offset: &offset)
+			self.centralDirectoryOffset = try data.readLittleInteger(disk: &disk, offset: &offset)
+			self.fileCommentLength = try data.readLittleInteger(disk: &disk, offset: &offset)
+			self.fileComment = try data.subdata(disk: &disk, offset: &offset, length: Int(self.fileCommentLength))
+		} catch FileError.endOfFileReached {
 			throw ZipError.incomplete
 		}
 
-		let signature = data.readLittleUInt32(offset: &offset)
-		if signature != EndOfCentralDirectoryRecord.signature {
+		if offset != diskSize {
 			throw ZipError.unexpectedBytes
-		}
-
-		if data.count - offset < 18 {
-			throw ZipError.incomplete
-		}
-
-		self.diskNumber = data.readLittleUInt16(offset: &offset)
-		self.centralDirectoryStartDiskNumber = data.readLittleUInt16(offset: &offset)
-		self.entriesOnDisk = data.readLittleUInt16(offset: &offset)
-		self.totalEntries = data.readLittleUInt16(offset: &offset)
-		self.centralDirectorySize = data.readLittleUInt32(offset: &offset)
-		self.centralDirectoryOffset = data.readLittleUInt32(offset: &offset)
-		self.fileCommentLength = data.readLittleUInt16(offset: &offset)
-
-		let commentEndIndex = offset + Data.Index(self.fileCommentLength)
-		if commentEndIndex <= data.count {
-			self.fileComment = data.subdata(in: offset..<commentEndIndex)
-			offset = commentEndIndex
-		} else {
-			throw ZipError.incomplete
 		}
 	}
 
 	/**
 	Search for end of central directory record at end of `data`
 	
-	- Parameter data: Contents of zip-file
+	- Parameter data: Contents of zip-file(s)
 	
-	- Throws: Error of type `ZipError`
+	- Throws: Error of type `ZipError` or `FileError`
 	
-	- Returns: Offset of end of central directory record
+	- Returns: Offset of end of central directory record on last disk
 	*/
-	static func find(in data: Data) throws -> Data.Index {
+	static func find(in data: SplitData) throws -> Int {
 		// Search for end of central directory record from end of file in reverse
-		var i = data.endIndex - EndOfCentralDirectoryRecord.minLength
-		let minOffset = Swift.min(data.startIndex, data.endIndex - EndOfCentralDirectoryRecord.maxLength)
+		let lastDisk = data.numberOfDisks - 1
+		let endIndex = try data.size(ofDisk: lastDisk)
+
+		var i = endIndex - EndOfCentralDirectoryRecord.minLength
+		let minOffset = Swift.min(0, endIndex - EndOfCentralDirectoryRecord.maxLength)
 
 		var endRecordFound = false
 		while i >= minOffset {
-			let potentialSignature = data.readLittleUInt32(offset: i)
+			let potentialSignature: UInt32 = try data.readLittleInteger(disk: lastDisk, offset: i)
 			if potentialSignature == EndOfCentralDirectoryRecord.signature {
 				endRecordFound = true
 				break
