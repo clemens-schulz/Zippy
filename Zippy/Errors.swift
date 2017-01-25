@@ -8,6 +8,9 @@
 
 import Foundation
 
+/**
+File-related error
+*/
 public enum FileError: Error {
 	/// Could not read file
 	case readFailed
@@ -18,6 +21,9 @@ public enum FileError: Error {
 	/// More split ZIP file segments than actually needed
 	case tooManySegments
 
+	/// File extension of split ZIP file does not conform to standard
+	case invalidSegmentFileExtension
+
 	/// File does not exist
 	case doesNotExist
 
@@ -25,6 +31,9 @@ public enum FileError: Error {
 	case endOfFileReached
 }
 
+/**
+Error in ZIP file
+*/
 public enum ZipError: Error {
 	/// End of central directory record missing
 	case endOfCentralDirectoryRecordMissing
@@ -55,9 +64,21 @@ public enum ZipError: Error {
 
 	/// Multiple files with same name found
 	case duplicateFileName
+
+	/// Extensible data field contains invalid data
+	case invalidExtraField
+
+	/// Zip64 extended information field is missing
+	case missingZip64ExtendedInformation
 }
 
+/**
+Zippy implementation-specific error
+*/
 public enum ZippyError: Error {
 	/// Compression algorithm not implemented
 	case unsupportedCompression
+
+	/// ZIP file is using strong encryption, which requires special license agreement from PKWARE
+	case unsupportedEncryption
 }

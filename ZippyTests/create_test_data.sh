@@ -39,7 +39,7 @@ head -c $((i*64)) < /dev/urandom > "$FILENAMETEST_FILENAME"
 
 mkdir "../$COMPRESSED_DIR"
 
-head -c 2147500000 < /dev/zero | zip "../$COMPRESSED_DIR/zip64.zip" -
+head -c 4294967296 < /dev/zero | zip "../$COMPRESSED_DIR/zip64.zip" -
 head -c 600000000 < /dev/urandom | zip "../$COMPRESSED_DIR/large.zip" -
 
 zip "../$COMPRESSED_DIR/deflate.zip" file_*.txt "$FILENAMETEST_FILENAME"

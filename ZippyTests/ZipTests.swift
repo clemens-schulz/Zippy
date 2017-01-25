@@ -11,30 +11,12 @@ import XCTest
 
 class ZipTests: XCTestCase {
 
-	var zipFilename: String {
-		return "deflate.zip"
-	}
-
 	var zipFileForTesting: ZipFile?
-
-	func openZipFile(named name: String) -> ZipFile? {
-		let testBundle = Bundle(for: type(of: self))
-		let url = testBundle.url(forResource: name, withExtension: nil, subdirectory: "testdata/zip/")
-		XCTAssertNotNil(url, "Could not find file '\(name)'.")
-
-		var zipFileForTesting: ZipFile? = nil
-		do {
-			zipFileForTesting = try ZipFile(url: url!)
-		} catch {
-			XCTFail("Opening '\(name)' failed with error: \(error)")
-		}
-		return zipFileForTesting
-	}
 
 	override func setUp() {
         super.setUp()
 		self.continueAfterFailure = false
-		self.zipFileForTesting = self.openZipFile(named: self.zipFilename)
+		self.loadTestData()
     }
     
     override func tearDown() {
@@ -42,18 +24,8 @@ class ZipTests: XCTestCase {
         super.tearDown()
     }
 
-	func readUncompressedFile(named name: String) -> Data? {
-		let testBundle = Bundle(for: type(of: self))
-		let url = testBundle.url(forResource: name, withExtension: nil, subdirectory: "testdata/uncompressed/")
-		XCTAssertNotNil(url, "Could not find file '\(name)'.")
-
-		var data: Data? = nil
-		do {
-			data = try Data(contentsOf: url!)
-		} catch {
-			XCTFail("Reading '\(name)' failed with error: \(error)")
-		}
-		return data
+	func loadTestData() {
+		self.zipFileForTesting = TestData.openZipFile(named: "deflate.zip")
 	}
     
 	func testFilenames() {
@@ -64,10 +36,10 @@ class ZipTests: XCTestCase {
 
 		for i in 1...500 {
 			let expectedFilename = "file_\(i).txt"
-			XCTAssert(filenames.contains(expectedFilename), "'\(self.zipFilename)' is missing file '\(expectedFilename)'")
+			XCTAssert(filenames.contains(expectedFilename), "Archive is missing file '\(expectedFilename)'")
 		}
-		XCTAssert(filenames.contains("filename_length_and_encoding_test äöüßÄÖÜ^°!§$%&()=?#+-;:,.あうえいおコンピュータ　日本語 한국어 普通话 العَرَبِيَّة ру́сский язы́к le français [lə fʁɑ̃sɛ].txt"), "'\(self.zipFilename)' failed filename encoding test.")
-		XCTAssert(filenames.count == 501, "'\(self.zipFilename)' contains unexpected files.")
+		XCTAssert(filenames.contains("filename_length_and_encoding_test äöüßÄÖÜ^°!§$%&()=?#+-;:,.あうえいおコンピュータ　日本語 한국어 普通话 العَرَبِيَّة ру́сский язы́к le français [lə fʁɑ̃sɛ].txt"), "'Archive failed filename encoding test")
+		XCTAssert(filenames.count == 501, "Archive contains unexpected files.")
     }
 
 	func testRead() {
@@ -75,11 +47,11 @@ class ZipTests: XCTestCase {
 		XCTAssertNotNil(zipFile)
 
 		for oneFilename in zipFile {
-			let expectedData = self.readUncompressedFile(named: oneFilename)
+			let expectedData = TestData.readUncompressedFile(named: oneFilename)
 			XCTAssertNotNil(expectedData, "Failed to read uncompressed test data for file '\(oneFilename)'.")
 
 			let data = zipFile[oneFilename]
-			XCTAssert(data == expectedData, "Data for '\(oneFilename)' in '\(self.zipFilename)' does not match original data.")
+			XCTAssert(data == expectedData, "Data for '\(oneFilename)' does not match original data.")
 		}
 	}
 
@@ -88,7 +60,7 @@ class ZipTests: XCTestCase {
 		XCTAssertNotNil(zipFile)
 
 		let filename = "does not exist.txt"
-		XCTAssert(zipFile[filename] == nil, "Data for not existing '\(filename)' in '\(self.zipFilename)' returned.")
+		XCTAssertNil(zipFile[filename], "Data for not existing '\(filename)' returned.")
 
 		do {
 			_ = try zipFile.read(filename: filename)
@@ -109,17 +81,17 @@ class ZipTests: XCTestCase {
 			if let index = filenames.index(of: filename) {
 				filenames.remove(at: index)
 			} else {
-				XCTFail("Filenames returned by iterator are different from filenames array for '\(self.zipFilename)'")
+				XCTFail("Filenames returned by iterator are different from filenames array")
 			}
 
 			// Compare data returned by read(filename:) and subscript
 			let dataReadMethod = try? zipFile.read(filename: filename)
 			let dataSubscript = zipFile[filename]
 
-			XCTAssert(dataReadMethod == dataSubscript, "Subscript returns different data than read(filename:) for '\(self.zipFilename)'")
+			XCTAssert(dataReadMethod == dataSubscript, "Subscript returns different data than read(filename:)")
 		}
 
-		XCTAssert(filenames.count == 0, "Iterator did not return all filenames for '\(self.zipFilename)'")
+		XCTAssert(filenames.count == 0, "Iterator did not return all filenames")
 	}
 
 	func testPerformance() {

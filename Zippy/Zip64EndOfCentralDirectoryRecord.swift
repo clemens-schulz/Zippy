@@ -38,7 +38,7 @@ Structure of the Zip64 end of central directory (c.d.) record:
 
 */
 
-struct Zip64EndOfCentralDirectoryRecord: DataStruct {
+struct Zip64EndOfCentralDirectoryRecord: DataStruct, ExtensibleDataReader {
 
 	static let signature: UInt32 = 0x06064b50
 	static let minLength: Int = 56
@@ -71,7 +71,7 @@ struct Zip64EndOfCentralDirectoryRecord: DataStruct {
 	let centralDirectoryOffset: UInt64
 
 	/// Data from extensible data sector
-	let extensibleData: Data
+	let extensibleData: [ExtensibleDataField]
 
 	init(data: SplitData, disk: inout Int, offset: inout Int) throws {
 		do {
@@ -91,7 +91,7 @@ struct Zip64EndOfCentralDirectoryRecord: DataStruct {
 			self.centralDirectoryOffset = try data.readLittleInteger(disk: &disk, offset: &offset)
 
 			let extensibleDataLength = Int(self.length) - 44
-			self.extensibleData = try data.subdata(disk: &disk, offset: &offset, length: extensibleDataLength)
+			self.extensibleData = try Zip64EndOfCentralDirectoryRecord.readExtensibleData(data: data, disk: &disk, offset: &offset, length: extensibleDataLength)
 		} catch FileError.endOfFileReached {
 			throw ZipError.incomplete
 		}

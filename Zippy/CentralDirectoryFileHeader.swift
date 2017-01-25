@@ -18,7 +18,7 @@ struct InternalFileAttribute: OptionSet {
 
 }
 
-struct CentralDirectoryFileHeader: DataStruct {
+struct CentralDirectoryFileHeader: DataStruct, ExtensibleDataReader {
 
 	static let signature: UInt32 = 0x02014b50
 	static let minLength: Int = 46
@@ -41,7 +41,7 @@ struct CentralDirectoryFileHeader: DataStruct {
 	let externalAttributes: UInt32
 	let offsetOfLocalHeader: UInt32
 	let filename: Data
-	let extraField: Data
+	let extraField: [ExtensibleDataField]
 	let fileComment: Data
 
 	init(data: SplitData, disk: inout Int, offset: inout Int) throws {
@@ -78,12 +78,12 @@ struct CentralDirectoryFileHeader: DataStruct {
 			let headerLength = Int(self.filenameLength) + Int(self.extraFieldLength) + Int(self.fileCommentLength) + 46
 			let maxRecommendedLength = 65535
 			if headerLength > maxRecommendedLength {
-				let log = OSLog(subsystem: "Zippy", category: "ReadZip")
-				os_log("File header in central directory is %d bytes long and exceeds recommended max. size of %d bytes.", log: log, type: .info, headerLength, maxRecommendedLength)
+				let log = OSLog(subsystem: "Zippy", category: "ReadZIP")
+				os_log("File header in central directory is %d bytes long and exceeds recommended max. size of %d bytes.", log: log, type: .debug, headerLength, maxRecommendedLength)
 			}
 
 			self.filename = try data.subdata(disk: &disk, offset: &offset, length: Int(self.filenameLength))
-			self.extraField = try data.subdata(disk: &disk, offset: &offset, length: Int(self.extraFieldLength))
+			self.extraField = try CentralDirectoryFileHeader.readExtensibleData(data: data, disk: &disk, offset: &offset, length: Int(self.extraFieldLength))
 			self.fileComment = try data.subdata(disk: &disk, offset: &offset, length: Int(self.fileCommentLength))
 
 			// TODO: read values from extra data if field is 0xffffffff (zip64 files)

@@ -7,7 +7,7 @@
 //
 
 import Foundation
-//import os
+import os
 
 struct GeneralPurposeBitFlag: OptionSet {
 	let rawValue: UInt16
@@ -103,8 +103,75 @@ extension DataStruct {
 
 }
 
-//
-//let log = OSLog(subsystem: "Zippy", category: "ParseZip")
-//os_log("Unknown compression method: %d", log: log, type: .error, compressionMethodRaw)
+protocol ExtensibleDataField: DataStruct {
+
+	/// Header ID
+	static var headerID: UInt16 { get }
+
+	/// Size of structure in bytes. Does not include header and data size field.
+	var length: Int { get }
+
+}
+
+protocol ExtensibleDataReader {
+
+	static func readExtensibleData(data: SplitData, disk: inout Int, offset: inout Int, length: Int) throws -> [ExtensibleDataField]
+	
+}
+
+extension ExtensibleDataReader {
+
+	static func readExtensibleData(data: SplitData, disk: inout Int, offset: inout Int, length: Int) throws -> [ExtensibleDataField] {
+		if length == 0 {
+			return []
+		} else if length < 4 {
+			throw ZipError.invalidExtraField
+		}
+
+		let possibleDataFieldTypes: [ExtensibleDataField.Type] = [Zip64ExtendedInformationExtraField.self]
+		var extensibleDataFields: [ExtensibleDataField] = []
+
+		do {
+			var bytesRead = 0
+			while bytesRead < length {
+				var unknownHeaderID = true
+				let headerID: UInt16 = try data.readLittleInteger(disk: disk, offset: offset)
+				var fieldLength: Int = 0 // Field length including header and size bytes
+
+				for fieldType in possibleDataFieldTypes {
+					if fieldType.headerID == headerID {
+						let dataField = try fieldType.init(data: data, disk: &disk, offset: &offset)
+						extensibleDataFields.append(dataField)
+						fieldLength = 4 + dataField.length
+						unknownHeaderID = false
+						break
+					}
+				}
+
+				if unknownHeaderID {
+					offset += 2 // Size of header ID
+					let dataSize: UInt16 = try data.readLittleInteger(disk: &disk, offset: &offset)
+
+					offset += Int(dataSize)
+					fieldLength = 4 + Int(dataSize)
+
+					let log = OSLog(subsystem: "Zippy", category: "ReadZIP")
+					os_log("Unknown extensible data field with header ID 0x%04x and size of %d bytes", log: log, type: .debug, headerID, dataSize)
+				}
+
+				if bytesRead + fieldLength > length {
+					throw ZipError.invalidExtraField
+				}
+
+				bytesRead += fieldLength
+			}
+		} catch FileError.endOfFileReached {
+			throw ZipError.incomplete
+		}
+
+		return extensibleDataFields
+	}
+
+}
 
 

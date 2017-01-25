@@ -13,27 +13,26 @@ class FileEntry {
 
 	var filename: String
 	var comment: String?
-	var extraField: Data?
 
 	var lastModification: Date
 
-	var checksum: UInt32
-	var compressedSize: Int
-	var uncompressedSize: Int
+	let checksum: UInt32
+	let compressedSize: Int
+	let uncompressedSize: Int
 
 	var compressionMethod: CompressionMethod
 	var compressionOption1: Bool
 	var compressionOption2: Bool
 
-	private var diskStartNumber: Int
-	private var localHeaderOffset: Int
+	private let diskStartNumber: Int
+	private let localHeaderOffset: Int
+	// TODO: Use UInt64 instead of Int for size and offset
 
 	init(header: CentralDirectoryFileHeader, encoding: String.Encoding) throws {
 		// TODO: check version needed
 
 		self.filename = String(data: header.filename, encoding: encoding) ?? ""
 		self.comment = header.fileComment.count > 0 ? String(data: header.fileComment, encoding: encoding) : nil
-		self.extraField = header.extraField.count > 0 ? header.extraField : nil
 
 		var dateComponents = DateComponents()
 		dateComponents.calendar = Calendar(identifier: .gregorian)
@@ -47,15 +46,71 @@ class FileEntry {
 		self.lastModification = dateComponents.date ?? Date(timeIntervalSince1970: 0.0)
 
 		self.checksum = header.crc32checksum
-		self.compressedSize = Int(header.compressedSize)
-		self.uncompressedSize = Int(header.uncompressedSize)
 
 		self.compressionMethod = header.compressionMethod
 		self.compressionOption1 = header.flags.contains(.compressionOption1)
 		self.compressionOption2 = header.flags.contains(.compressionOption2)
 
-		self.diskStartNumber = Int(header.diskNumberStart)
-		self.localHeaderOffset = Int(header.offsetOfLocalHeader)
+		// Extract 32-bit size and position values and check if 64-bit values are used
+		var compressedSize = Int(header.compressedSize)
+		var uncompressedSize = Int(header.uncompressedSize)
+		var diskStartNumber = Int(header.diskNumberStart)
+		var localHeaderOffset = Int(header.offsetOfLocalHeader)
+
+		let zip64CompressedSize = (header.compressedSize == UInt32.max)
+		let zip64UncompressedSize = (header.uncompressedSize == UInt32.max)
+		let zip64DiskNumberStart = (header.diskNumberStart == UInt16.max)
+		let zip64OffsetOfLocalHeader = (header.offsetOfLocalHeader == UInt32.max)
+
+		if zip64CompressedSize || zip64UncompressedSize || zip64DiskNumberStart || zip64OffsetOfLocalHeader {
+			var zip64ExtendedInfo: Zip64ExtendedInformationExtraField! = nil
+			for oneExtraField in header.extraField {
+				if let oneExtraField = oneExtraField as? Zip64ExtendedInformationExtraField {
+					zip64ExtendedInfo = oneExtraField
+				}
+			}
+
+			if zip64ExtendedInfo == nil {
+				throw ZipError.missingZip64ExtendedInformation
+			}
+
+			if zip64CompressedSize {
+				if zip64ExtendedInfo.compressedSize != nil {
+					compressedSize = Int(zip64ExtendedInfo.compressedSize!)
+				} else {
+					throw ZipError.missingZip64ExtendedInformation
+				}
+			}
+
+			if zip64UncompressedSize {
+				if zip64ExtendedInfo.uncompressedSize != nil {
+					uncompressedSize = Int(zip64ExtendedInfo.uncompressedSize!)
+				} else {
+					throw ZipError.missingZip64ExtendedInformation
+				}
+			}
+
+			if zip64DiskNumberStart {
+				if zip64ExtendedInfo.diskStartNumber != nil {
+					diskStartNumber = Int(zip64ExtendedInfo.diskStartNumber!)
+				} else {
+					throw ZipError.missingZip64ExtendedInformation
+				}
+			}
+
+			if zip64OffsetOfLocalHeader {
+				if zip64ExtendedInfo.localHeaderOffset != nil {
+					localHeaderOffset = Int(zip64ExtendedInfo.localHeaderOffset!)
+				} else {
+					throw ZipError.missingZip64ExtendedInformation
+				}
+			}
+		}
+
+		self.compressedSize = compressedSize
+		self.uncompressedSize = uncompressedSize
+		self.diskStartNumber = diskStartNumber
+		self.localHeaderOffset = localHeaderOffset
 
 		// TODO: check compression method
 	}
@@ -74,13 +129,31 @@ class FileEntry {
 		var offset = self.localHeaderOffset
 
 		let localHeader = try LocalFileHeader(data: data, disk: &disk, offset: &offset)
-		print(localHeader)
 
-		//let dataDescriptor = localHeader.flags.contains(.dataDescriptor)
-		// TODO: check size before or after reading, depending on existance of data descriptor
-		// TODO: check other header values
+		if localHeader.flags.contains(.encryptedFile) {
+			if localHeader.flags.contains(.strongEncryption) {
+				throw ZippyError.unsupportedEncryption
+			}
+			fatalError("not yet implemented")
+			// TODO: read encryption header
+		}
+
+		let usesDataDescriptor = localHeader.flags.contains(.dataDescriptor)
+		if usesDataDescriptor {
+			// TODO: check if size + crc is set to zero
+		} else {
+			// TODO: check size before decompressing
+			// TODO: is crc32 value for compressed or uncompressed data?
+		}
+
+		// TODO: check other header values?
+		// TODO: zip64
 
 		let compressedData = try data.subdata(disk: &disk, offset: &offset, length: self.compressedSize)
+
+		if usesDataDescriptor {
+			// TODO: read data descriptor and do same checks as before
+		}
 
 		switch compressionMethod {
 		case .noCompression:
@@ -95,10 +168,13 @@ class FileEntry {
 				return uncompressedData
 			}
 			// TODO: check for errors
+			// TODO: move to Data extension
 			return data
 		default:
 			throw ZippyError.unsupportedCompression
 		}
+
+		// TODO: check crc32 of uncompressed data
 	}
 
 }

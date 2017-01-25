@@ -11,34 +11,88 @@ import Foundation
 open class ZipFile : Sequence {
 
 	private let fileData: SplitData
-
 	private(set) var entries: [String:FileEntry]
+
 	open var filenames: [String] {
 		return Array(self.entries.keys)
 	}
 
 	open var comment: String?
 
-	convenience init(url: URL) throws {
+	/**
+	Initializes split ZIP file with segments at `segmentURLs`. URLs do not need to be ordered. Segment order will be
+	inferred by file extension. (.z0, .z1, ...)
+
+	- Parameter segmentURLs: URLs of ZIP file segments.
+
+	- Throws: Error of type `FileError`, `ZipError`, or `ZippyError`.
+	*/
+	public convenience init(segmentURLs: [URL]) throws {
+		let minSegment = 1
+		let maxSegment = segmentURLs.count
+
+		var segments = [(segment: Int, fileWrapper: FileWrapper)]()
+
+		for url in segmentURLs {
+			let segmentNumber: Int
+
+			let ext = url.pathExtension
+			if ext == "zip" {
+				segmentNumber = maxSegment
+			} else {
+				if ext.characters.count < 2 || ext.characters.first != "z" {
+					throw FileError.invalidSegmentFileExtension
+				}
+
+				let segment: Int! = Int(ext.substring(from: ext.index(after: ext.startIndex)))
+				if segment < minSegment || segment >= maxSegment {
+					throw FileError.invalidSegmentFileExtension
+				}
+
+				segmentNumber = segment
+			}
+
+			let fileWrapper = try FileWrapper(url: url, options: [])
+			segments.append((segment: segmentNumber, fileWrapper: fileWrapper))
+		}
+
+		segments.sort { $0.segment < $1.segment }
+		let fileWrappers: [FileWrapper] = segments.map { $0.fileWrapper }
+
+		try self.init(fileWrappers: fileWrappers)
+	}
+
+	/**
+	Initializes ZIP file at `url`.
+	
+	- Parameter url: URL to ZIP file.
+
+	- Throws: Error of type `FileError`, `ZipError`, or `ZippyError`.
+	*/
+	public convenience init(url: URL) throws {
 		let fileWrapper = try FileWrapper(url: url, options: [])
 		try self.init(fileWrapper: fileWrapper)
+		// TODO: find split ZIP segments automatically, if dictionary access possible
 	}
 
 	/**
 	Initializes ZIP file. `fileWrapper` must be a regular-file file wrapper.
 	
+	- Parameter fileWrapper: Regular-file file wrapper containing ZIP data.
+
 	- Throws: Error of type `FileError` or `ZipError`.
 	*/
-	convenience init(fileWrapper: FileWrapper) throws {
+	public convenience init(fileWrapper: FileWrapper) throws {
 		try self.init(fileWrappers: [fileWrapper])
 	}
 
 	/**
-	Initializes split ZIP file. `fileWrappers` may only contain regular-file file wrappers and must be ordered by disk number. E.g.: disk 1 at index 0, disk 2 at index 1, …
+	Initializes split ZIP file. `fileWrappers` may only contain regular-file file wrappers and must be ordered by disk
+	number. E.g.: disk 1 at index 0, disk 2 at index 1, …
 	
 	- Throws: Error of type `FileError` or `ZipError`.
 	*/
-	init(fileWrappers: [FileWrapper]) throws {
+	public init(fileWrappers: [FileWrapper]) throws {
 		// Make sure all file wrappers wrap regular files
 		for fileWrapper in fileWrappers {
 			if !fileWrapper.isRegularFile {
@@ -94,7 +148,7 @@ open class ZipFile : Sequence {
 			}
 
 			// Check if all disks are present (again)
-			if numberOfSegments != Int(endOfCentralDirRec.diskNumber) {
+			if numberOfSegments != Int(endOfCentralDirRec.diskNumber) + 1 {
 				throw ZipError.conflictingValues
 			}
 
@@ -189,11 +243,19 @@ open class ZipFile : Sequence {
 		self.entries = fileEntries
 	}
 
-	subscript(filename: String) -> Data? {
+	/**
+	Returns uncompressed data of file with specific filename. May return `nil` if file does not exist or an error
+	occurred. To get more detailed error reason, use `read(filename:)`.
+	
+	- Parameter filename: Name of file
+	
+	- Returns: Uncompressed data of file or `nil`
+	*/
+	open subscript(filename: String) -> Data? {
 		return try? self.read(filename: filename)
 	}
 
-	public func makeIterator() -> IndexingIterator<[String]> {
+	open func makeIterator() -> IndexingIterator<[String]> {
 		return self.filenames.makeIterator()
 	}
 
@@ -202,11 +264,12 @@ open class ZipFile : Sequence {
 	
 	- Parameter filename: Name of file
 	
-	- Throws: `FileError.doesNotExist` if file does not exist or other errors of type `FileError` or `ZipError`
+	- Throws: `FileError.doesNotExist` if file does not exist or other errors of type `FileError`, `ZipError`, or
+	`ZippyError`
 	
 	- Returns: Uncompressed data
 	*/
-	func read(filename: String) throws -> Data {
+	open func read(filename: String) throws -> Data {
 		if let entry = self.entries[filename] {
 			return try entry.extract(from: self.fileData)
 		} else {

@@ -8,6 +8,8 @@
 
 import Foundation
 
+// TODO: thread-safe ZipDataWrapper that only keeps 1 file in memory at the same time
+
 /**
 This class lets you read continuous data from multiple Data objects.
 */
@@ -100,13 +102,21 @@ class SplitData {
 	*/
 	func subdata(disk: inout Int, offset: inout Int, length: Int) throws -> Data {
 		let data = try self.data(forDisk: disk)
-		if offset + length <= data.endIndex {
-			let subdata = data.subdata(in: offset..<(offset+length))
-			offset += length
-			return subdata
-		} else {
-			fatalError("not yet implemented")
+
+		let remainingLength = max(offset + length - data.endIndex, 0)
+
+		var subdata = data.subdata(in: offset..<(offset+length))
+		offset += length
+
+		if remainingLength > 0 {
+			disk += 1
+			offset = 0
+
+			let remainingSubdata = try self.subdata(disk: &disk, offset: &offset, length: remainingLength)
+			subdata.append(remainingSubdata)
 		}
+
+		return subdata
 	}
 
 	/**
