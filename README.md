@@ -13,17 +13,17 @@ Please read the [TODO section](#todo) before using it!
 
 ## Usage
 
-	```swift
-	import Zippy
-	
-	let fileURL = <URL to file>
-	let file = try! ZipFile(url: fileURL)
-	
-	for filename in file {
-		let data = file[filename]
-		// Do something with file data…
-	}
-	```
+``` swift
+import Zippy
+
+let fileURL = <URL to file>
+let file = try! ZipFile(url: fileURL)
+
+for filename in file {
+    let data = file[filename]
+    // Do something with file data…
+}
+```
 
 ## Installation
 
@@ -35,13 +35,9 @@ Zippy requires Swift 3 and iOS 10.0 or greater.
 
 2. Update your Podfile to include the following
 
-	``` ruby
-	use_frameworks!
-	
-	target 'AppTargetNameOfYourApp' do
-	    pod 'Zippy'
-	end
-	```
+``` ruby
+pod 'Zippy'
+```
 
 3. Run `pod install`
 
