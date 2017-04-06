@@ -105,7 +105,7 @@ class SplitData {
 
 		let remainingLength = max(offset + length - data.endIndex, 0)
 
-		var subdata = data.subdata(in: offset..<(offset+length))
+		var subdata = data.subdata(in: offset..<min(offset+length, data.endIndex))
 		offset += length
 
 		if remainingLength > 0 {
