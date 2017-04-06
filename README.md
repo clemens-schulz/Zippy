@@ -2,14 +2,16 @@
 
 Zippy is an iOS framework for reading ZIP files. It's written in Swift 3 and uses [Apple's compression framework](https://developer.apple.com/reference/compression) for decompression.
 
-# Features
+Please read the [TODO section](#todo) before using it!
+
+## Features
 
 - Easy to use
 - Support for reading ZIP files using `FileWrapper` or `URL`
 - Support for split ZIP files
 - Tests
 
-# Usage
+## Usage
 
 	import Zippy
 	
@@ -21,11 +23,11 @@ Zippy is an iOS framework for reading ZIP files. It's written in Swift 3 and use
 		// Do something with file data…
 	}
 
-# Tests
+## Tests
 
 Testdata is generated automatically when running the tests for the first time. It's **about 640MB big** to test the framework with large files. I should probably add an option to skip the large file test…
 
-# TODO
+## TODO
 
 The framework is already usable, but it still ignores a lot of information in ZIP files. It has not been tested with ZIP files from different sources. Make sure to test it thoroughly before shipping your app.
 
