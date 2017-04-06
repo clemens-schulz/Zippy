@@ -13,6 +13,7 @@ Please read the [TODO section](#todo) before using it!
 
 ## Usage
 
+	```swift
 	import Zippy
 	
 	let fileURL = <URL to file>
@@ -22,6 +23,39 @@ Please read the [TODO section](#todo) before using it!
 		let data = file[filename]
 		// Do something with file data…
 	}
+	```
+
+## Installation
+
+Zippy requires Swift 3 and iOS 10.0 or greater.
+
+### CocoaPods
+
+1. Make sure [CocoaPods](https://cocoapods.org) is installed and `cd` into your project directory.
+
+2. Update your Podfile to include the following
+
+	``` ruby
+	use_frameworks!
+	
+	target 'AppTargetNameOfYourApp' do
+	    pod 'Zippy'
+	end
+	```
+
+3. Run `pod install`
+
+### Manual
+
+1. Submodule, clone, or download Zippy and drag the **Zippy.xcodeproj** file into your own project.
+
+2. Select your project file in the Xcode sidebar, then select your target. In the **General** tab, click the **+** button under **Embedded Binaries**.
+
+3. Select **Zippy.framework**.
+
+4. **Add**.
+
+The framework should appear under **Embedded Binaries** and **Linked Frameworks and Libraries**
 
 ## Tests
 
@@ -40,6 +74,5 @@ There is still a lot do to:
 - More and better tests
 - More documentation in code
 - Support for macOS (new target and tests)
-- CocoaPods
 
 Feel free to send push requests or report bugs.
