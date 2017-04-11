@@ -8,7 +8,7 @@
 
 import Foundation
 
-open class ZipFile : Sequence {
+open class ZipFile: Sequence {
 
 	private let fileData: SplitData
 	private(set) var entries: [String:FileEntry]

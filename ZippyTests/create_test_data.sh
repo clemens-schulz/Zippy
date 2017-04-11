@@ -9,7 +9,8 @@
 TESTDATA_PATH='./testdata/'
 
 UNCOMPRESSED_DIR='uncompressed'
-COMPRESSED_DIR='zip'
+ZIP_DIR='zip'
+GZIP_DIR='gzip'
 
 if [ ! -d $TESTDATA_PATH ];
 then
@@ -37,13 +38,18 @@ done
 FILENAMETEST_FILENAME='filename_length_and_encoding_test äöüßÄÖÜ^°!§$%&()=?#+-;:,.あうえいおコンピュータ　日本語 한국어 普通话 العَرَبِيَّة ру́сский язы́к le français [lə fʁɑ̃sɛ].txt'
 head -c $((i*64)) < /dev/urandom > "$FILENAMETEST_FILENAME"
 
-mkdir "../$COMPRESSED_DIR"
+mkdir "../$ZIP_DIR"
 
-head -c 4294967296 < /dev/zero | zip "../$COMPRESSED_DIR/zip64.zip" -
-head -c 600000000 < /dev/urandom | zip "../$COMPRESSED_DIR/large.zip" -
+head -c 4294967296 < /dev/zero | zip "../$ZIP_DIR/zip64.zip" -
+head -c 600000000 < /dev/urandom | zip "../$ZIP_DIR/large.zip" -
 
-zip "../$COMPRESSED_DIR/deflate.zip" file_*.txt "$FILENAMETEST_FILENAME"
-zip -s 1m "../$COMPRESSED_DIR/split.zip" file_*.txt "$FILENAMETEST_FILENAME"
+zip "../$ZIP_DIR/deflate.zip" file_*.txt "$FILENAMETEST_FILENAME"
+zip -s 1m "../$ZIP_DIR/split.zip" file_*.txt "$FILENAMETEST_FILENAME"
+
+# Gzip
+mkdir "../$GZIP_DIR"
+cp 'file_500.txt' "../$GZIP_DIR/"
+gzip "../$GZIP_DIR/file_500.txt"
 
 touch "../complete"
 

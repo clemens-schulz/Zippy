@@ -14,7 +14,7 @@ class TestData {
 	static func urlForFile(name: String, subdirectory: String?) -> URL? {
 		let testBundle = Bundle(for: self)
 		let url = testBundle.url(forResource: name, withExtension: nil, subdirectory: subdirectory)
-		XCTAssertNotNil(url, "Could not find file '\(name)' in '\(subdirectory)'.")
+		XCTAssertNotNil(url, "Could not find file '\(name)' in '\(subdirectory ?? ".")'.")
 		return url
 	}
 
