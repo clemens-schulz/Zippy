@@ -13,7 +13,8 @@ class TestData {
 
 	static func urlForFile(name: String, subdirectory: String?) -> URL? {
 		let testBundle = Bundle(for: self)
-		let url = testBundle.url(forResource: name, withExtension: nil, subdirectory: subdirectory)
+		// let url = testBundle.url(forResource: name, withExtension: nil, subdirectory: subdirectory)  // For some reason this doesn't find the file with the special characters filename
+		let url = testBundle.urls(forResourcesWithExtension: nil, subdirectory: subdirectory)?.first(where: {oneURL in return oneURL.lastPathComponent == name})
 		XCTAssertNotNil(url, "Could not find file '\(name)' in '\(subdirectory ?? ".")'.")
 		return url
 	}
