@@ -8,11 +8,7 @@
 
 import Foundation
 
-protocol CRCInt: UnsignedInteger {
-	static func >>(lhs: Self, rhs: Self) -> Self
-	static func >>=(lhs: inout Self, rhs: Self)
-	static func ^(lhs: Self, rhs: Self) -> Self
-}
+protocol CRCInt: FixedWidthInteger, UnsignedInteger {}
 
 extension UInt8: CRCInt {}
 extension UInt16: CRCInt {}
@@ -25,10 +21,10 @@ struct CRC<T: CRCInt> {
 	private var seed: T
 
 	var value: T {
-		return self.seed ^ ~T.allZeros
+		return self.seed ^ ~0
 	}
 
- 	init(polynomial: T, seed: T = ~T.allZeros) {
+ 	init(polynomial: T, seed: T = ~0) {
 		self.seed = seed
 		self.polynomial = polynomial
 	}
@@ -39,7 +35,7 @@ struct CRC<T: CRCInt> {
 	private lazy var lookupTable: [T] = {
 		var lookupTable = [T](repeating: 0, count: 256)
 		for i in 0..<256 {
-			var crc = T(UIntMax(i))
+			var crc = T(i)
 
 			for _ in 0..<8 {
 				if crc & 0x1 == 0x1 {
@@ -63,7 +59,7 @@ struct CRC<T: CRCInt> {
 		var crc = self.seed
 		for byte in buffer {
 			// XOR byte with first byte of CRC
-			let result = byte ^ UInt8((crc.toUIntMax() & 0xff))
+			let result = byte ^ UInt8((crc & 0xff))
 			// Lookup the already computed CRC value and XOR with 1-byte-shifted CRC
 			crc = (crc>>8) ^ self.lookupTable[Int(result)]
 		}

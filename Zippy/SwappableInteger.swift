@@ -8,7 +8,7 @@
 
 import Foundation
 
-protocol SwappableInteger: Integer {
+protocol SwappableInteger: BinaryInteger {
 	init(bigEndian value: Self)
 	init(littleEndian value: Self)
 	init(integerLiteral value: Self)

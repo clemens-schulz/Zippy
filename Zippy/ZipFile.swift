@@ -44,7 +44,7 @@ open class ZipFile: Sequence {
 					throw FileError.invalidSegmentFileExtension
 				}
 
-				let segment: Int! = Int(ext.substring(from: ext.index(after: ext.startIndex)))
+				let segment: Int! = Int(ext[ext.index(after: ext.startIndex)...])
 				if segment < minSegment || segment >= maxSegment {
 					throw FileError.invalidSegmentFileExtension
 				}
