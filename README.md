@@ -1,6 +1,6 @@
 # Zippy
 
-Zippy is an iOS framework for reading ZIP files. It's written in Swift 3 and uses [Apple's compression framework](https://developer.apple.com/reference/compression) for decompression.
+Zippy is an iOS framework for reading ZIP files. It's written in Swift 4 and uses [Apple's compression framework](https://developer.apple.com/reference/compression) for decompression.
 
 Please read the [TODO section](#todo) before using it!
 
@@ -27,7 +27,7 @@ for filename in file {
 
 ## Installation
 
-Zippy requires Swift 3 and iOS 10.0 or greater.
+Zippy requires Swift 4 and iOS 10.0 or greater.
 
 ### CocoaPods
 
@@ -71,4 +71,4 @@ There is still a lot do to:
 - More documentation in code
 - Support for macOS (new target and tests)
 
-Feel free to send push requests or report bugs.
+Feel free to send pull requests or report bugs.
