@@ -1,7 +1,7 @@
 Pod::Spec.new do |s|
 
   s.name         = "Zippy"
-  s.version      = "0.2"
+  s.version      = "0.2.1"
   s.summary      = "Framework for reading ZIP files"
 
   s.description  = <<-DESC
