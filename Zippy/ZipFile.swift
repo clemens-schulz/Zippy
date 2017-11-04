@@ -40,7 +40,7 @@ open class ZipFile: Sequence {
 			if ext == "zip" {
 				segmentNumber = maxSegment
 			} else {
-				if ext.characters.count < 2 || ext.characters.first != "z" {
+				if ext.count < 2 || ext.first != "z" {
 					throw FileError.invalidSegmentFileExtension
 				}
 
