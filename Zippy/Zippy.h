@@ -2,11 +2,11 @@
 //  Zippy.h
 //  Zippy
 //
-//  Created by Clemens on 02/12/2016.
-//  Copyright © 2016 Clemens Schulz. All rights reserved.
+//  Created by Clemens on 09.01.18.
+//  Copyright © 2018 Clemens Schulz. All rights reserved.
 //
 
-#import <UIKit/UIKit.h>
+#import <Foundation/Foundation.h>
 
 //! Project version number for Zippy.
 FOUNDATION_EXPORT double ZippyVersionNumber;
