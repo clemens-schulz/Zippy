@@ -2,19 +2,21 @@
 //  ZipArchive.swift
 //  Zippy
 //
-//  Created by Clemens on 01.02.18.
+//  Created by Clemens on 12.06.18.
 //  Copyright © 2018 Clemens Schulz. All rights reserved.
 //
 
 import Foundation
+import os.log
 
-public class ZipArchive: CompressedArchive, Sequence {
-	public var delegate: CompressedArchiveDelegate?
+public class ZipArchive: CompressedArchive {
 
-	public let numberOfSegments: Int
+	static let log = OSLog(subsystem: "de.wetfish.Zippy", category: "ZipArchive")
 
-	private var fileEntries = [String:ZipFileEntry]()
+	public weak var delegate: CompressedArchiveDelegate?
+
 	public private(set) var filenames = [String]()
+	private var fileEntries = [String:FileEntry]()
 
 	private let reader: DataReader
 
@@ -48,7 +50,6 @@ public class ZipArchive: CompressedArchive, Sequence {
 		} else {
 			numberOfDisks = Int(endOfCentralDirRec.diskNumber) + 1
 		}
-		self.numberOfSegments = numberOfDisks
 
 		// Update data reader, if zip file has multiple segments
 		if numberOfDisks > 1 {
@@ -57,81 +58,31 @@ public class ZipArchive: CompressedArchive, Sequence {
 			endOfCentralDirRecIndex.segment = numberOfDisks - 1
 		}
 
-		self.delegate = delegate
 		self.reader = reader
+		self.delegate = delegate
 
 		reader.dataSource = self
 
-		let centralDirectory = try self.readCentralDirectory()
-
-		// Get info for files in central directory
-		let encoding: String.Encoding = .utf8
+		// Read central directory
+		let centralDirectory = try self.readCentralDirectory() // TODO: catch reader errors
+		let fileEntries = try self.fileEntries(for: centralDirectory)
 
 		var filenames = [String]()
-		var fileEntries = [String:ZipFileEntry]()
+		var fileEntriesDict = [String:FileEntry]()
 
-		for header in centralDirectory.headers {
-			let filename: String! = String(bytes: header.filename, encoding: encoding)
-			guard filename != nil else {
-				throw ZipError.encodingError
+		for oneFileEntry in fileEntries {
+			let filename = oneFileEntry.filename
+			guard fileEntriesDict[filename] == nil else {
+				os_log("Archive contains multiple files named '%@'.", log: ZipArchive.log, type: .debug, filename)
+				continue
 			}
-
-			guard !fileEntries.keys.contains(filename) else {
-				throw ZipError.duplicateFilename
-			}
-
-			var startDiskNumber = Int(header.startDiskNumber)
-			var relativeOffsetOfLocalHeader = Int(header.relativeOffsetOfLocalHeader)
-			var compressedSize = Int(header.compressedSize)
-			var uncompressedSize = Int(header.uncompressedSize)
-
-			// Update values, if in zip64 extra field
-			let zip64Fields = header.zip64Fields
-			if zip64Fields != .none {
-				let extraField = header.extraFields.fields.first(where: { (field: Zip.ExtensibleDataField) -> Bool in
-					return field.headerID == Zip.Zip64ExtendedInformationExtraField.headerID
-				})
-
-				if let extraField = extraField {
-					let zip64ExtraField = try Zip.Zip64ExtendedInformationExtraField(data: extraField.data, fields: zip64Fields)
-
-					if zip64ExtraField.startDiskNumber != nil {
-						startDiskNumber = Int(zip64ExtraField.startDiskNumber!)
-					}
-
-					if zip64ExtraField.relativeHeaderOffset != nil {
-						relativeOffsetOfLocalHeader = Int(zip64ExtraField.relativeHeaderOffset!)
-					}
-
-					if zip64ExtraField.compressedSize != nil {
-						compressedSize = Int(zip64ExtraField.compressedSize!)
-					}
-
-					if zip64ExtraField.originalSize != nil {
-						uncompressedSize = Int(zip64ExtraField.originalSize!)
-					}
-				}
-			}
-
-			// Create entry
-			let localFileHeaderIndex = DataReader.Index(
-				segment: Int(startDiskNumber),
-				offset: Int(relativeOffsetOfLocalHeader)
-			)
-
-			let entry = ZipFileEntry(
-				compressedSize: compressedSize,
-				uncompressedSize: uncompressedSize,
-				crc32checksum: header.crc32checksum,
-				localFileHeaderIndex: localFileHeaderIndex
-			)
 
 			filenames.append(filename)
-			fileEntries[filename] = entry
+			fileEntriesDict[filename] = oneFileEntry
 		}
 
+		self.fileEntries = fileEntriesDict
 		self.filenames = filenames
-		self.fileEntries = fileEntries
 	}
 
 	private func readCentralDirectory() throws -> Zip.CentralDirectory {
@@ -141,7 +92,7 @@ public class ZipArchive: CompressedArchive, Sequence {
 			let segment = Int(zip64EndLocator.zip64EndRecordStartDiskNumber)
 			let offset = Int(zip64EndLocator.zip64EndRecordRelativeOffset)
 			let recordIndex = DataReader.Index(segment: segment, offset: offset)
-			zip64EndOfCentralDirRec = try Zip.Zip64EndOfCentralDirectoryRecord(reader: reader, at: recordIndex)
+			zip64EndOfCentralDirRec = try Zip.Zip64EndOfCentralDirectoryRecord(reader: self.reader, at: recordIndex)
 		} else {
 			zip64EndOfCentralDirRec = nil
 		}
@@ -163,35 +114,72 @@ public class ZipArchive: CompressedArchive, Sequence {
 		}
 
 		var centralDirIndex = DataReader.Index(segment: centralDirStartDisk, offset: centralDirOffset)
-		let centralDirectory = try Zip.CentralDirectory(reader: reader, at: &centralDirIndex, length: centralDirSize)
+		let centralDirectory = try Zip.CentralDirectory(reader: self.reader, at: &centralDirIndex, length: centralDirSize)
 
 		// TODO: verify digital signature of central directory
 
 		return centralDirectory
 	}
 
-	public func extract(file filename: String, verify: Bool = false) throws -> Data {
-		fatalError("not implemented")
+	private func fileEntries(for centralDirectory: Zip.CentralDirectory) throws -> [FileEntry] {
+		let encoding: String.Encoding = .utf8 // TODO: check if always utf-8
+
+		var entries = [FileEntry]()
+
+		for oneHeader in centralDirectory.headers {
+			let entry = try FileEntry(header: oneHeader, encoding: encoding)
+			entries.append(entry)
+		}
+
+		return entries
 	}
 
-	public func extract(file filename: String, to url: URL, verify: Bool = false) throws {
-		fatalError("not implemented")
+	public func extract(file filename: String, verify: Bool) throws -> Data {
+		guard let fileEntry = self.fileEntries[filename] else {
+			throw CompressedArchiveError.noSuchFile
+		}
+
+		let outputStream = OutputStream.toMemory()
+
+		try fileEntry.extract(from: self.reader, to: outputStream, verify: verify)
+
+		guard let data = outputStream.property(forKey: .dataWrittenToMemoryStreamKey) as? Data else {
+			throw CompressedArchiveError.writeFailed
+		}
+
+		return data
+	}
+
+	public func extract(file filename: String, to url: URL, verify: Bool) throws {
+		guard let fileEntry = self.fileEntries[filename] else {
+			throw CompressedArchiveError.noSuchFile
+		}
+
+		// TODO: check if output file is a already existing folder, append filename if yes
+		// TODO: check if file already exists, throw error if it does
+
+		guard let outputStream = OutputStream(url: url, append: false) else {
+			throw CompressedArchiveError.writeFailed
+		}
+		
+		try fileEntry.extract(from: self.reader, to: outputStream, verify: verify)
 	}
 
 	public func info(for filename: String) throws -> CompressedFileInfo {
-		if let fileInfo = self.fileEntries[filename] {
-			return fileInfo
-		} else {
+		guard let fileEntry = self.fileEntries[filename] else {
 			throw CompressedArchiveError.noSuchFile
 		}
-	}
 
+		return fileEntry
+	}
 }
+
+extension ZipArchive: Sequence {}
 
 extension ZipArchive: DataReaderDataSource {
 
 	func dataReader(_ dataReader: DataReader, dataForSegment segmentIndex: Int) -> Data? {
-		return self.delegate?.compressedArchive(self, dataForSegment: segmentIndex)
+		return self.delegate?.compressedArchive(self, dataForSegment: segmentIndex, segmentCount: dataReader.numberOfSegments)
 	}
 
 }

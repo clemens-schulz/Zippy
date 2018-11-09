@@ -40,7 +40,7 @@ extension Zip {
 
 		static let signature: UInt32 = 0x06054b50
 		static let minLength: Int = 22
-		static let maxLength: Int = EndOfCentralDirectoryRecord.minLength + Data.IndexDistance(UInt16.max)
+		static let maxLength: Int = EndOfCentralDirectoryRecord.minLength + Int(UInt16.max)
 
 		/// The number of this disk (containing the end of central directory record)
 		let diskNumber: UInt16

@@ -124,6 +124,7 @@ extension Zip {
 			self.fileComment = try reader.read(Int(self.fileCommentLength), at: &index)
 		}
 
+		/// Fields that are set to their max. value. This usually means their actual value is defined inside the Zip64 extended information extra field
 		var zip64Fields: Zip.Zip64ExtendedInformationExtraField.Fields {
 			var zip64Fields: Zip.Zip64ExtendedInformationExtraField.Fields = .none
 

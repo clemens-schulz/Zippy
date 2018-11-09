@@ -79,7 +79,7 @@ class DataReaderTests: XCTestCase {
 	}
 
 	func testReadData() throws {
-		let dataRange = Range(1..<4)
+		let dataRange = 1..<4
 		var index = self.dataReader.startIndex + dataRange.lowerBound
 		let readData = try self.dataReader.read(dataRange.count, at: &index)
 		XCTAssertEqual(readData, Data(bytes: self.bytes[dataRange]))
@@ -142,7 +142,7 @@ class DataReaderTests: XCTestCase {
 	}
 
 	func testReadUInt16Performance() {
-		let dataSize = 8 * 1024 * 1024
+		let dataSize = 1024 * 1024
 
 		var bytes = [UInt8]()
 		for _ in 0..<dataSize {

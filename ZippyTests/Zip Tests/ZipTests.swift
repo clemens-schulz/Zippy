@@ -39,7 +39,7 @@ class ZipTests: XCTestCase {
 		do {
 			let url = URL(fileURLWithPath: "DOES NOT EXIST!")
 			_ = try ZipArchive(url: url)
-		} catch CompressedArchiveError.noSuchFile {
+		} catch CocoaError.fileReadNoSuchFile {
 			// Expected error
 		} catch {
 			XCTFail("caught error: \(error)")

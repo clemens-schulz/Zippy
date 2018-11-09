@@ -31,9 +31,12 @@ public enum ZipError: Error {
 	/// Data of filename or comment could not be decoded
 	case encodingError
 
-	/// At least two files have the same filename
-	case duplicateFilename
-
+	/// Data for zip64 extended information extra field does not contain all expected fields
 	case invalidZip64ExtendedInformationExtraFieldLength
 
+	/// Support for encryption method is not implemented
+	case unsupportedEncryption
+
+	/// Support for compression method is not implemented
+	case unsupportedCompressionMethod
 }

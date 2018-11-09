@@ -9,8 +9,6 @@
 /* Begin PBXBuildFile section */
 		AB008C3E20236B27005D96D7 /* CompressionStream.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB008C3D20236B27005D96D7 /* CompressionStream.swift */; };
 		AB008C3F20236B27005D96D7 /* CompressionStream.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB008C3D20236B27005D96D7 /* CompressionStream.swift */; };
-		AB008C42202384D1005D96D7 /* ZipArchive.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB008C41202384D1005D96D7 /* ZipArchive.swift */; };
-		AB008C43202384D1005D96D7 /* ZipArchive.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB008C41202384D1005D96D7 /* ZipArchive.swift */; };
 		AB008C4520238572005D96D7 /* ZipStructs.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB008C4420238572005D96D7 /* ZipStructs.swift */; };
 		AB008C4620238572005D96D7 /* ZipStructs.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB008C4420238572005D96D7 /* ZipStructs.swift */; };
 		AB008C47202385B5005D96D7 /* EndOfCentralDirectoryRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABF35D50200575110026FB82 /* EndOfCentralDirectoryRecord.swift */; };
@@ -23,8 +21,6 @@
 		AB008C51202387B6005D96D7 /* ExtensibleData.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB0AB47B200835DA00D894D2 /* ExtensibleData.swift */; };
 		AB008C5320238C4F005D96D7 /* CentralDirectory.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB008C5220238C4F005D96D7 /* CentralDirectory.swift */; };
 		AB008C5420238C4F005D96D7 /* CentralDirectory.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB008C5220238C4F005D96D7 /* CentralDirectory.swift */; };
-		AB008C592024A525005D96D7 /* ZipFileEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB008C582024A525005D96D7 /* ZipFileEntry.swift */; };
-		AB008C5A2024A525005D96D7 /* ZipFileEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB008C582024A525005D96D7 /* ZipFileEntry.swift */; };
 		AB008C5E2024CC27005D96D7 /* ZipTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB008C5D2024CC27005D96D7 /* ZipTests.swift */; };
 		AB008C5F2024CC27005D96D7 /* ZipTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB008C5D2024CC27005D96D7 /* ZipTests.swift */; };
 		AB07FDAF2004DFE900863790 /* DataReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB07FDAE2004DFE900863790 /* DataReader.swift */; };
@@ -37,16 +33,26 @@
 		AB0C4BA620045202007AC5A2 /* Zippy.h in Headers */ = {isa = PBXBuildFile; fileRef = AB0C4B552004502C007AC5A2 /* Zippy.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		AB0C4BAF200454D1007AC5A2 /* GzipStream.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB0C4BAE200454D1007AC5A2 /* GzipStream.swift */; };
 		AB0C4BB0200454D1007AC5A2 /* GzipStream.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB0C4BAE200454D1007AC5A2 /* GzipStream.swift */; };
-		AB0C4BB220045689007AC5A2 /* Errors.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB0C4BB120045689007AC5A2 /* Errors.swift */; };
-		AB0C4BB320045689007AC5A2 /* Errors.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB0C4BB120045689007AC5A2 /* Errors.swift */; };
+		AB29FD0D2193367100FC576C /* ZipFileEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB29FD0C2193367100FC576C /* ZipFileEntry.swift */; };
+		AB29FD0E219336C200FC576C /* ZipFileEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB29FD0C2193367100FC576C /* ZipFileEntry.swift */; };
 		AB67B32B2024FC350054AAA9 /* CompressionStreamTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB67B32A2024FC350054AAA9 /* CompressionStreamTests.swift */; };
 		AB67B32C2024FC350054AAA9 /* CompressionStreamTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB67B32A2024FC350054AAA9 /* CompressionStreamTests.swift */; };
 		AB67B3312025003D0054AAA9 /* Testdata in Resources */ = {isa = PBXBuildFile; fileRef = AB67B3302025003D0054AAA9 /* Testdata */; };
 		AB67B3322025003D0054AAA9 /* Testdata in Resources */ = {isa = PBXBuildFile; fileRef = AB67B3302025003D0054AAA9 /* Testdata */; };
+		AB86323D219523EF0037CB56 /* CompressedFileInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB86323C219523EF0037CB56 /* CompressedFileInfo.swift */; };
+		AB86323F219524000037CB56 /* CompressedArchiveError.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB86323E219524000037CB56 /* CompressedArchiveError.swift */; };
+		AB8632412195263F0037CB56 /* CompressedArchiveDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB8632402195263F0037CB56 /* CompressedArchiveDelegate.swift */; };
+		AB8632422195265D0037CB56 /* CompressedArchiveDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB8632402195263F0037CB56 /* CompressedArchiveDelegate.swift */; };
+		AB8632432195265D0037CB56 /* CompressedArchiveError.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB86323E219524000037CB56 /* CompressedArchiveError.swift */; };
+		AB8632442195265D0037CB56 /* CompressedFileInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB86323C219523EF0037CB56 /* CompressedFileInfo.swift */; };
+		AB8ABB8C2193D25900DCE911 /* LocalFileHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB8ABB8B2193D25900DCE911 /* LocalFileHeader.swift */; };
+		AB8ABB8D2193D25900DCE911 /* LocalFileHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB8ABB8B2193D25900DCE911 /* LocalFileHeader.swift */; };
 		ABA446B6200464400097CC79 /* CompressedArchive.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABA446B5200464400097CC79 /* CompressedArchive.swift */; };
 		ABA446B7200464400097CC79 /* CompressedArchive.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABA446B5200464400097CC79 /* CompressedArchive.swift */; };
 		ABA51E35200B62BA00A1F052 /* DataReaderMultiSegmentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABA51E34200B62BA00A1F052 /* DataReaderMultiSegmentTests.swift */; };
 		ABA51E36200B62BA00A1F052 /* DataReaderMultiSegmentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABA51E34200B62BA00A1F052 /* DataReaderMultiSegmentTests.swift */; };
+		ABE633A420CFA59F00E28428 /* ZipArchive.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABE633A320CFA59F00E28428 /* ZipArchive.swift */; };
+		ABE633A520CFA59F00E28428 /* ZipArchive.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABE633A320CFA59F00E28428 /* ZipArchive.swift */; };
 		ABE85E69202507EC00FC12F1 /* SplitZipTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABE85E68202507EC00FC12F1 /* SplitZipTests.swift */; };
 		ABE85E6A202507EC00FC12F1 /* SplitZipTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABE85E68202507EC00FC12F1 /* SplitZipTests.swift */; };
 		ABE85E6C202507FA00FC12F1 /* Zip64Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABE85E6B202507FA00FC12F1 /* Zip64Tests.swift */; };
@@ -76,11 +82,9 @@
 
 /* Begin PBXFileReference section */
 		AB008C3D20236B27005D96D7 /* CompressionStream.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompressionStream.swift; sourceTree = "<group>"; };
-		AB008C41202384D1005D96D7 /* ZipArchive.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZipArchive.swift; sourceTree = "<group>"; };
 		AB008C4420238572005D96D7 /* ZipStructs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZipStructs.swift; sourceTree = "<group>"; };
 		AB008C4B20238629005D96D7 /* ZipError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZipError.swift; sourceTree = "<group>"; };
 		AB008C5220238C4F005D96D7 /* CentralDirectory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CentralDirectory.swift; sourceTree = "<group>"; };
-		AB008C582024A525005D96D7 /* ZipFileEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZipFileEntry.swift; sourceTree = "<group>"; };
 		AB008C5D2024CC27005D96D7 /* ZipTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZipTests.swift; sourceTree = "<group>"; };
 		AB07FDAE2004DFE900863790 /* DataReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataReader.swift; sourceTree = "<group>"; };
 		AB0AB478200833EC00D894D2 /* ZipErrors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZipErrors.swift; sourceTree = "<group>"; };
@@ -96,14 +100,19 @@
 		AB0C4B97200451D2007AC5A2 /* ZippyTests-iOS.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "ZippyTests-iOS.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		AB0C4BAB2004548E007AC5A2 /* ZipArchive.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZipArchive.swift; sourceTree = "<group>"; };
 		AB0C4BAE200454D1007AC5A2 /* GzipStream.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GzipStream.swift; sourceTree = "<group>"; };
-		AB0C4BB120045689007AC5A2 /* Errors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Errors.swift; sourceTree = "<group>"; };
+		AB29FD0C2193367100FC576C /* ZipFileEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZipFileEntry.swift; sourceTree = "<group>"; };
 		AB341D7720070C4500E12401 /* ZipArchiveDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZipArchiveDelegate.swift; sourceTree = "<group>"; };
 		AB67B32A2024FC350054AAA9 /* CompressionStreamTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompressionStreamTests.swift; sourceTree = "<group>"; };
 		AB67B3302025003D0054AAA9 /* Testdata */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Testdata; sourceTree = "<group>"; };
+		AB86323C219523EF0037CB56 /* CompressedFileInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompressedFileInfo.swift; sourceTree = "<group>"; };
+		AB86323E219524000037CB56 /* CompressedArchiveError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompressedArchiveError.swift; sourceTree = "<group>"; };
+		AB8632402195263F0037CB56 /* CompressedArchiveDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompressedArchiveDelegate.swift; sourceTree = "<group>"; };
+		AB8ABB8B2193D25900DCE911 /* LocalFileHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalFileHeader.swift; sourceTree = "<group>"; };
 		ABA446B5200464400097CC79 /* CompressedArchive.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompressedArchive.swift; sourceTree = "<group>"; };
 		ABA51E34200B62BA00A1F052 /* DataReaderMultiSegmentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataReaderMultiSegmentTests.swift; sourceTree = "<group>"; };
 		ABAE08C220079C050017493E /* Zip64.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Zip64.swift; sourceTree = "<group>"; };
 		ABCC1F062010470100939CFB /* CentralDirectoryFileHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CentralDirectoryFileHeader.swift; sourceTree = "<group>"; };
+		ABE633A320CFA59F00E28428 /* ZipArchive.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZipArchive.swift; sourceTree = "<group>"; };
 		ABE85E68202507EC00FC12F1 /* SplitZipTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplitZipTests.swift; sourceTree = "<group>"; };
 		ABE85E6B202507FA00FC12F1 /* Zip64Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Zip64Tests.swift; sourceTree = "<group>"; };
 		ABE85E6E202537F000FC12F1 /* WeakEncryptionZipTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeakEncryptionZipTests.swift; sourceTree = "<group>"; };
@@ -159,11 +168,12 @@
 		AB008C4020238340005D96D7 /* Zip */ = {
 			isa = PBXGroup;
 			children = (
-				AB008C41202384D1005D96D7 /* ZipArchive.swift */,
-				AB008C582024A525005D96D7 /* ZipFileEntry.swift */,
+				ABE633A320CFA59F00E28428 /* ZipArchive.swift */,
+				AB29FD0C2193367100FC576C /* ZipFileEntry.swift */,
 				AB008C4B20238629005D96D7 /* ZipError.swift */,
 				AB008C4420238572005D96D7 /* ZipStructs.swift */,
 				AB008C5220238C4F005D96D7 /* CentralDirectory.swift */,
+				AB8ABB8B2193D25900DCE911 /* LocalFileHeader.swift */,
 				AB0AB47B200835DA00D894D2 /* ExtensibleData.swift */,
 				ABAE08C220079C050017493E /* Zip64.swift */,
 				ABF35D50200575110026FB82 /* EndOfCentralDirectoryRecord.swift */,
@@ -195,7 +205,9 @@
 			isa = PBXGroup;
 			children = (
 				ABA446B5200464400097CC79 /* CompressedArchive.swift */,
-				AB0C4BB120045689007AC5A2 /* Errors.swift */,
+				AB8632402195263F0037CB56 /* CompressedArchiveDelegate.swift */,
+				AB86323E219524000037CB56 /* CompressedArchiveError.swift */,
+				AB86323C219523EF0037CB56 /* CompressedFileInfo.swift */,
 				AB008C39202362D4005D96D7 /* Shared */,
 				AB008C4020238340005D96D7 /* Zip */,
 				AB0C4BB420045714007AC5A2 /* Zip_old */,
@@ -352,16 +364,17 @@
 			isa = PBXProject;
 			attributes = {
 				LastSwiftUpdateCheck = 0920;
-				LastUpgradeCheck = 0920;
+				LastUpgradeCheck = 1000;
 				ORGANIZATIONNAME = "Clemens Schulz";
 				TargetAttributes = {
 					AB0C4B702004512A007AC5A2 = {
 						CreatedOnToolsVersion = 9.2;
-						LastSwiftMigration = 0920;
+						LastSwiftMigration = 1000;
 						ProvisioningStyle = Automatic;
 					};
 					AB0C4B782004512A007AC5A2 = {
 						CreatedOnToolsVersion = 9.2;
+						LastSwiftMigration = 1000;
 						ProvisioningStyle = Automatic;
 					};
 					AB0C4B8E200451D2007AC5A2 = {
@@ -433,16 +446,19 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				AB0C4BB320045689007AC5A2 /* Errors.swift in Sources */,
+				AB8ABB8D2193D25900DCE911 /* LocalFileHeader.swift in Sources */,
+				ABE633A520CFA59F00E28428 /* ZipArchive.swift in Sources */,
+				AB8632422195265D0037CB56 /* CompressedArchiveDelegate.swift in Sources */,
 				AB07FDB02004DFE900863790 /* DataReader.swift in Sources */,
 				ABA446B7200464400097CC79 /* CompressedArchive.swift in Sources */,
+				AB8632442195265D0037CB56 /* CompressedFileInfo.swift in Sources */,
 				AB0C4BB0200454D1007AC5A2 /* GzipStream.swift in Sources */,
 				ABE85E7420253CBC00FC12F1 /* CRC.swift in Sources */,
-				AB008C43202384D1005D96D7 /* ZipArchive.swift in Sources */,
-				AB008C5A2024A525005D96D7 /* ZipFileEntry.swift in Sources */,
 				AB008C4D20238629005D96D7 /* ZipError.swift in Sources */,
+				AB8632432195265D0037CB56 /* CompressedArchiveError.swift in Sources */,
 				AB008C3F20236B27005D96D7 /* CompressionStream.swift in Sources */,
 				AB008C51202387B6005D96D7 /* ExtensibleData.swift in Sources */,
+				AB29FD0E219336C200FC576C /* ZipFileEntry.swift in Sources */,
 				AB008C4620238572005D96D7 /* ZipStructs.swift in Sources */,
 				AB008C5420238C4F005D96D7 /* CentralDirectory.swift in Sources */,
 				AB008C4F202386F4005D96D7 /* Zip64.swift in Sources */,
@@ -468,16 +484,19 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				AB0C4BB220045689007AC5A2 /* Errors.swift in Sources */,
+				AB8ABB8C2193D25900DCE911 /* LocalFileHeader.swift in Sources */,
+				ABE633A420CFA59F00E28428 /* ZipArchive.swift in Sources */,
 				AB07FDAF2004DFE900863790 /* DataReader.swift in Sources */,
 				ABA446B6200464400097CC79 /* CompressedArchive.swift in Sources */,
+				AB86323D219523EF0037CB56 /* CompressedFileInfo.swift in Sources */,
 				AB0C4BAF200454D1007AC5A2 /* GzipStream.swift in Sources */,
 				ABE85E7320253CBC00FC12F1 /* CRC.swift in Sources */,
-				AB008C42202384D1005D96D7 /* ZipArchive.swift in Sources */,
-				AB008C592024A525005D96D7 /* ZipFileEntry.swift in Sources */,
 				AB008C4C20238629005D96D7 /* ZipError.swift in Sources */,
+				AB86323F219524000037CB56 /* CompressedArchiveError.swift in Sources */,
 				AB008C3E20236B27005D96D7 /* CompressionStream.swift in Sources */,
+				AB8632412195263F0037CB56 /* CompressedArchiveDelegate.swift in Sources */,
 				AB008C50202387B6005D96D7 /* ExtensibleData.swift in Sources */,
+				AB29FD0D2193367100FC576C /* ZipFileEntry.swift in Sources */,
 				AB008C4520238572005D96D7 /* ZipStructs.swift in Sources */,
 				AB008C5320238C4F005D96D7 /* CentralDirectory.swift in Sources */,
 				AB008C4E202386F4005D96D7 /* Zip64.swift in Sources */,
@@ -529,6 +548,7 @@
 				CLANG_WARN_BOOL_CONVERSION = YES;
 				CLANG_WARN_COMMA = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CLANG_WARN_EMPTY_BODY = YES;
@@ -536,6 +556,7 @@
 				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
@@ -590,6 +611,7 @@
 				CLANG_WARN_BOOL_CONVERSION = YES;
 				CLANG_WARN_COMMA = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CLANG_WARN_EMPTY_BODY = YES;
@@ -597,6 +619,7 @@
 				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
@@ -651,7 +674,7 @@
 				SDKROOT = macosx;
 				SKIP_INSTALL = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-				SWIFT_VERSION = 4.0;
+				SWIFT_VERSION = 4.2;
 				VALID_ARCHS = x86_64;
 			};
 			name = Debug;
@@ -676,7 +699,7 @@
 				PRODUCT_NAME = Zippy;
 				SDKROOT = macosx;
 				SKIP_INSTALL = YES;
-				SWIFT_VERSION = 4.0;
+				SWIFT_VERSION = 4.2;
 				VALID_ARCHS = x86_64;
 			};
 			name = Release;
@@ -694,7 +717,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = de.wetfish.ZippyTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
-				SWIFT_VERSION = 4.0;
+				SWIFT_VERSION = 4.2;
 				VALID_ARCHS = x86_64;
 			};
 			name = Debug;
@@ -712,7 +735,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = de.wetfish.ZippyTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
-				SWIFT_VERSION = 4.0;
+				SWIFT_VERSION = 4.2;
 				VALID_ARCHS = x86_64;
 			};
 			name = Release;

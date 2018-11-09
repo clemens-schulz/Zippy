@@ -82,7 +82,7 @@ public class CompressionStream {
 
 	deinit {
 		compression_stream_destroy(self.stream)
-		self.stream.deallocate(capacity: 1)
+		self.stream.deallocate()
 	}
 
 	/**
@@ -132,7 +132,7 @@ public class CompressionStream {
 				}
 			} while status == COMPRESSION_STATUS_OK && (self.stream.pointee.src_size > 0 || self.stream.pointee.dst_size == 0)
 
-			destinationBuffer.deallocate(capacity: self.bufferSize)
+			destinationBuffer.deallocate()
 
 			if status == COMPRESSION_STATUS_END {
 				self.isComplete = true
@@ -183,7 +183,7 @@ public class CompressionStream {
 			}
 		} while status == COMPRESSION_STATUS_OK && self.stream.pointee.dst_size < self.bufferSize
 
-		destinationBuffer.deallocate(capacity: self.bufferSize)
+		destinationBuffer.deallocate()
 
 		assert(status == COMPRESSION_STATUS_END)
 		self.isComplete = true
