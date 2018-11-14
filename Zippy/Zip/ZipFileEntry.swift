@@ -195,7 +195,11 @@ extension ZipArchive {
 					var uncompressedData: Data
 
 					if remainingLength == 0 {
-						uncompressedData = try compressionStream.finalize()
+						if compressionStream.isComplete {
+							break
+						} else {
+							uncompressedData = try compressionStream.process(data: Data())
+						}
 					} else {
 						let length = Swift.min(bufferSize, remainingLength)
 						let compressedData = try reader.read(length, at: &index)
@@ -226,10 +230,6 @@ extension ZipArchive {
 						} else {
 							uncompressedData = uncompressedData[bytesWritten...]
 						}
-					}
-
-					if remainingLength <= 0 {
-						break
 					}
 				}
 			default:
