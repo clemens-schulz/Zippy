@@ -148,7 +148,7 @@ extension CompressedArchive {
 	}
 
 	public subscript(filename: String) -> Data? {
-		return try? self.extract(file: filename, verify: true)
+		return try? self.extract(file: filename, verify: false)
 	}
 }
 
