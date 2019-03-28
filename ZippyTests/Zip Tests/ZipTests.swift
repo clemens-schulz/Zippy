@@ -138,7 +138,7 @@ class ZipTests: XCTestCase {
 			do {
 				let zipArchive = try ZipArchive(url: self.archiveURL)
 				for filename in zipArchive {
-					_ = try zipArchive.extract(file: filename, verify: false)
+					_ = try zipArchive.extract(filename, verify: false)
 				}
 			} catch {
 				XCTFail("caught error: \(error)")
@@ -151,7 +151,7 @@ class ZipTests: XCTestCase {
 			do {
 				let zipArchive = try ZipArchive(url: self.archiveURL)
 				for filename in zipArchive {
-					_ = try zipArchive.extract(file: filename, verify: true)
+					_ = try zipArchive.extract(filename, verify: true)
 				}
 			} catch {
 				XCTFail("caught error: \(error)")

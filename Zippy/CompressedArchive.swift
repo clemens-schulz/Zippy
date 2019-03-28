@@ -57,7 +57,7 @@ public protocol CompressedArchive: AnyObject {
 
 	/**
 	Returns uncompressed data of file with specific filename. May return `nil` if file does not exist or an error
-	occurred. To get more detailed error reason, use `extract(file:verify:)`.
+	occurred. To get more detailed error reason, use `extract(_:verify:)`.
 
 	- Parameter filename: Name of file
 
@@ -76,7 +76,19 @@ public protocol CompressedArchive: AnyObject {
 
 	- Returns: Uncompressed data
 	*/
-	func extract(file filename: String, verify: Bool) throws -> Data
+	func extract(_ filename: String, verify: Bool) throws -> Data
+
+	/**
+	Writes uncompressed data of file to output stream. Use this method for files that are too large to fit into memory.
+
+	- Parameter filename: Name of file
+	- Parameter outputStream: Stream for writing uncompressed data
+	- Parameter verify: Verify checksum of extracted data after writing it to output stream. Throws
+	`CompressedArchiveError.corrupted` if check fails. Do not use this option, if performance is important.
+
+	- Throws: An instance of `CompressedArchiveError`
+	*/
+	func extract(_ filename: String, to outputStream: OutputStream, verify: Bool) throws
 
 	/**
 	Writes uncompressed data of file to URL. Use this method for files that are too large to fit into memory.
@@ -91,7 +103,7 @@ public protocol CompressedArchive: AnyObject {
 
 	- Throws: An instance of `CompressedArchiveError` or `CocoaError`
 	*/
-	func extract(file filename: String, to url: URL, verify: Bool) throws
+	func extract(_ filename: String, to url: URL, verify: Bool) throws
 
 	/**
 	Returns file info
@@ -148,7 +160,7 @@ extension CompressedArchive {
 	}
 
 	public subscript(filename: String) -> Data? {
-		return try? self.extract(file: filename, verify: false)
+		return try? self.extract(filename, verify: false)
 	}
 }
 

@@ -134,14 +134,9 @@ public class ZipArchive: CompressedArchive {
 		return entries
 	}
 
-	public func extract(file filename: String, verify: Bool) throws -> Data {
-		guard let fileEntry = self.fileEntries[filename] else {
-			throw CompressedArchiveError.noSuchFile
-		}
-
+	public func extract(_ filename: String, verify: Bool) throws -> Data {
 		let outputStream = OutputStream.toMemory()
-
-		try fileEntry.extract(from: self.reader, to: outputStream, verify: verify)
+		try self.extract(filename, to: outputStream, verify: verify)
 
 		guard let data = outputStream.property(forKey: .dataWrittenToMemoryStreamKey) as? Data else {
 			throw CompressedArchiveError.writeFailed
@@ -150,7 +145,15 @@ public class ZipArchive: CompressedArchive {
 		return data
 	}
 
-	public func extract(file filename: String, to url: URL, verify: Bool) throws {
+	public func extract(_ filename: String, to outputStream: OutputStream, verify: Bool) throws {
+		guard let fileEntry = self.fileEntries[filename] else {
+			throw CompressedArchiveError.noSuchFile
+		}
+
+		try fileEntry.extract(from: self.reader, to: outputStream, verify: verify)
+	}
+
+	public func extract(_ filename: String, to url: URL, verify: Bool) throws {
 		guard let fileEntry = self.fileEntries[filename] else {
 			throw CompressedArchiveError.noSuchFile
 		}
