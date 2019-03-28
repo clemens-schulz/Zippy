@@ -369,12 +369,12 @@
 				TargetAttributes = {
 					AB0C4B702004512A007AC5A2 = {
 						CreatedOnToolsVersion = 9.2;
-						LastSwiftMigration = 1000;
+						LastSwiftMigration = 1020;
 						ProvisioningStyle = Automatic;
 					};
 					AB0C4B782004512A007AC5A2 = {
 						CreatedOnToolsVersion = 9.2;
-						LastSwiftMigration = 1000;
+						LastSwiftMigration = 1020;
 						ProvisioningStyle = Automatic;
 					};
 					AB0C4B8E200451D2007AC5A2 = {
@@ -394,6 +394,7 @@
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
+				Base,
 			);
 			mainGroup = AB0C4B482004502C007AC5A2;
 			productRefGroup = AB0C4B532004502C007AC5A2 /* Products */;
@@ -674,7 +675,7 @@
 				SDKROOT = macosx;
 				SKIP_INSTALL = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-				SWIFT_VERSION = 4.2;
+				SWIFT_VERSION = 5.0;
 				VALID_ARCHS = x86_64;
 			};
 			name = Debug;
@@ -699,7 +700,7 @@
 				PRODUCT_NAME = Zippy;
 				SDKROOT = macosx;
 				SKIP_INSTALL = YES;
-				SWIFT_VERSION = 4.2;
+				SWIFT_VERSION = 5.0;
 				VALID_ARCHS = x86_64;
 			};
 			name = Release;
@@ -717,7 +718,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = de.wetfish.ZippyTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
-				SWIFT_VERSION = 4.2;
+				SWIFT_VERSION = 5.0;
 				VALID_ARCHS = x86_64;
 			};
 			name = Debug;
@@ -735,7 +736,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = de.wetfish.ZippyTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
-				SWIFT_VERSION = 4.2;
+				SWIFT_VERSION = 5.0;
 				VALID_ARCHS = x86_64;
 			};
 			name = Release;
